@@ -1,4 +1,5 @@
-# Dashboard to analyse and vizualize detection and tracking results
+# MotionPathDashboard
+Dashboard to analyse and vizualize detection and tracking results
 
 ## Install
 Install PostGIS (see MotionPathExtraction)
