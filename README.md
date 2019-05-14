@@ -6,8 +6,9 @@ Dashboard to analyse and vizualize detection and tracking results
 </p>
 
 ## Install
-Install PostGIS (see MotionPathExtraction)
 
+Install PostGIS (see MotionPathExtraction)
+```
 conda create --name dash python=3.6
 conda activate dash
 conda install ipykernel
@@ -20,6 +21,7 @@ pip install psycopg2
 pip install shapely
 pip install geopandas
 conda install -c conda-forge gdal
+```
 
 ## What we have and what we want?
 
