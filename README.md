@@ -4,8 +4,6 @@ Dashboard to analyse and vizualize detection and tracking results
 ## Install
 Install PostGIS (see MotionPathExtraction)
 
-Create new separate environment if you like
-
 conda create --name dash python=3.6
 conda activate dash
 conda install ipykernel
@@ -13,7 +11,6 @@ python -m ipykernel install --user --name dash
 
 pip install dash
 pip install plotly --upgrade
-
 
 pip install psycopg2
 pip install shapely
