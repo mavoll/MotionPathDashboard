@@ -31,7 +31,7 @@ app.title = 'SmartSquare MotionPathDashboard'
 mapbox_access_token = 'pk.eyJ1Ijoic25vb3B0aGVub29iIiwiYSI6ImNqdm1qdTd2cDFkdWg0YXJ1YXZwNTFtdmcifQ.7ABtAp_1NyyHFFBbfAeIwQ'
 
 db = postgis.Postgis("postgres", "postgres", "gisdb")    
-sql = "SELECT cam, day, slice, part, subpart, track_id, time, track_class, geom FROM tracks_points_per_sec WHERE slice='Testdatensatz' AND day='Testdatensatz' AND  part=1 AND subpart=1"
+sql = "SELECT cam, day, slice, part, subpart, track_id, time, track_class, geom FROM tracks_points_per_sec"
 df = gpd.GeoDataFrame.from_postgis(sql, db.connection, geom_col='geom' )
 df = df.to_crs('epsg:4326')
 df['lon'] = df['geom'].y
@@ -178,7 +178,42 @@ app.layout = html.Div(
             ],
             className='row'
         ),
-    
+        # Selectors
+        html.Div(
+            [                
+                html.Div(
+                    [
+                        dcc.Dropdown(
+                            id='day',
+                            options= [{'label': item,'value': item}
+                                        for item in set(df['day'])],
+                            multi=True,
+                            value=list(set(df['day']))
+                        )
+                    ],
+                    className='six columns',
+                )
+            ],
+            className='row'
+        ),
+        # Selectors
+        html.Div(
+            [                
+                html.Div(
+                    [
+                        dcc.Dropdown(
+                            id='slice',
+                            options= [{'label': item,'value': item}
+                                        for item in set(df['slice'])],
+                            multi=True,
+                            value=list(set(df['slice']))
+                        )
+                    ],
+                    className='six columns',
+                )
+            ],
+            className='row'
+        ),    
         # Map + table + Histogram
         html.Div(
             [
@@ -270,15 +305,16 @@ def cam_selection(data, selected_rows):
 Output('datatable', 'data'),
 [Input('track_class', 'value'),
  Input('cam', 'values'),
- Input('datatable', 'selected_rows')])
-def update_selected_row(track_class, cam, selected_rows):
-    map_aux = df.copy()
-    
+ Input('datatable', 'selected_rows'),
+ Input('day', 'value'),
+ Input('slice', 'value')])
+def update_selected_row(track_class, cam, selected_rows, day, slice):
+    map_aux = df.copy()    
     map_aux = map_aux[map_aux['track_class'].astype(int).isin(track_class)]
-    
     map_aux = map_aux[map_aux['cam'].isin(cam)]    
-    
     map_aux = map_aux[map_aux['index'].isin(selected_rows)]
+    map_aux = map_aux[map_aux['day'].isin(day)]
+    map_aux = map_aux[map_aux['slice'].isin(slice)]
     
     #map_aux = map_aux.ix[selected_rows, :]
     
