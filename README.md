@@ -21,7 +21,7 @@ pip install psycopg2
 pip install shapely
 pip install geopandas
 
-python app.py
+python index.py
 ```
 
 ## What we have and what we want?

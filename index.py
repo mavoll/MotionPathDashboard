@@ -11,11 +11,21 @@ app.layout = html.Div([
     html.Div(id='page-content')
 ])
 
+index_page = html.Div([
+    dcc.Link('Go to Statistics', href='/statistics'),
+    html.Br(),
+    dcc.Link('Go to Indicators', href='/indicators'),
+])
+
 
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/apps/app_raw_data':
+    if pathname == '/':
+        return app_raw_data.layout
+    if pathname == '/statistics':
+        return app_raw_data.layout
+    if pathname == '/indicators':
         return app_raw_data.layout
     else:
         return '404'

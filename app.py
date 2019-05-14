@@ -24,3 +24,4 @@ app.df['index'] = app.df.index
 
 # Boostrap CSS.
 app.css.append_css({'external_url': 'https://codepen.io/amyoshino/pen/jzXypZ.css'})
+

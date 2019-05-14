@@ -106,9 +106,14 @@ def gen_map(map_data):
 
 layout = html.Div(
     html.Div([
+        html.Div(id='page-1-content'),
+        html.Br(),
+        dcc.Link('Go to indicators', href='/indicators'),
+        html.Br(),
+        dcc.Link('Go to statistics', href='/'),
         html.Div(
             [
-                html.H1(children='SmartSquare - Movements',
+                html.H1(children='SmartSquare - Movement Raw Data',
                         className='nine columns')
                 
             ], className="row"
