@@ -1,6 +1,5 @@
 import psycopg2
 import sys
-import geopandas as gpd
 
 
 class Postgis(object):
@@ -36,14 +35,3 @@ class Postgis(object):
         except Exception:            
             print("ERROR - closing connection")
             print(str(sys.exc_info()[0]) + str(sys.exc_info()[1]))
-    
-  
-if __name__ == '__main__':
-    
-    app = Postgis("postgres", "postgres", "gisdb")
-    
-    sql = "SELECT track_id, time, track_class, geom FROM tracks_points_per_sec WHERE slice='Testdatensatz' AND cam='kirchvorplatz' AND day='Testdatensatz' AND  part=1 AND subpart=1"
-    df = gpd.GeoDataFrame.from_postgis(sql, app.connection, geom_col='geom' )
-    df.plot()    
-    
-    app.close()

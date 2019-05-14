@@ -4,6 +4,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 import pandas as pd
+import geopandas as gpd
 from plotly import graph_objs as go
 
 from app import app
@@ -22,6 +23,16 @@ classes = ['', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
             'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave',
             'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase',
             'scissors', 'teddy bear', 'hair drier', 'toothbrush']
+
+sql = "SELECT cam, day, slice, part, subpart, track_id, time, track_class, geom FROM tracks_points_per_sec"
+df = gpd.GeoDataFrame.from_postgis(sql, app.db.connection, geom_col='geom' )
+df = df.to_crs('epsg:4326')
+df['lon'] = df['geom'].y
+df['lat'] = df['geom'].x
+#df['time'] = df['time'].astype(str)
+del df['geom']
+df.sort_values(['time','track_id'], axis=0, ascending=True, inplace=True)
+df['index'] = df.index
 
 #  Layouts
 layout_table = dict(
@@ -79,30 +90,6 @@ layout_pies = dict(
     height=500, 
     
 )
-        
-# functions
-def gen_map(map_data):
-    # groupby returns a dictionary mapping the values of the first field
-    # 'classification' onto a list of record dictionaries with that
-    # classification value.
-    if not map_data.empty:
-        return {
-            "data": [{
-                    "type": "scattermapbox",
-                    "lat": list(map_data['lat']),
-                    "lon": list(map_data['lon']),
-                    "hoverinfo": "text",
-                    "hovertext": [["Track ID: {} <br>Track class: {} <br>Time: {}".format(i,j,k)]
-                                    for i,j,k in zip(map_data['track_id'], map_data['track_class'],map_data['time'])],
-                    "mode": "markers",
-                    "name": list(map_data['track_id']),
-                    "marker": {
-                        "size": 6,
-                        "opacity": 0.7
-                    }
-            }],
-            "layout": layout_map
-        }
 
 layout = html.Div(
     html.Div([
@@ -148,7 +135,7 @@ layout = html.Div(
                         dcc.Dropdown(
                             id='track_class',
                             options= [{'label': classes[int(item)],'value': int(item)}
-                                        for item in set(app.df['track_class'].astype(int))],
+                                        for item in set(df['track_class'].astype(int))],
                             multi=True,
                             value=[1,2,3,4,6,8]#list(set(df['track_class'].astype(int)))
                         )
@@ -166,9 +153,9 @@ layout = html.Div(
                         dcc.Dropdown(
                             id='day',
                             options= [{'label': item,'value': item}
-                                        for item in set(app.df['day'])],
+                                        for item in set(df['day'])],
                             multi=True,
-                            value=list(set(app.df['day']))
+                            value=list(set(df['day']))
                         )
                     ],
                     className='six columns',
@@ -184,9 +171,9 @@ layout = html.Div(
                         dcc.Dropdown(
                             id='slice',
                             options= [{'label': item,'value': item}
-                                        for item in set(app.df['slice'])],
+                                        for item in set(df['slice'])],
                             multi=True,
-                            value=list(set(app.df['slice']))
+                            value=list(set(df['slice']))
                         )
                     ],
                     className='six columns',
@@ -213,9 +200,9 @@ layout = html.Div(
                     [
                         dt.DataTable(
                             id='datatable',
-                            columns=[{"name": i, "id": i} for i in app.df.columns],
-                            data=app.df.to_dict("rows"),
-                            selected_rows=list(app.df.index.values) ,#[],
+                            columns=[{"name": i, "id": i} for i in df.columns],
+                            data=df.to_dict("rows"),
+                            selected_rows=list(df.index.values) ,#[],
                             editable=False,
                             filtering=True,
                             sorting=True,
@@ -279,7 +266,27 @@ Output('map-graph', 'figure'),
 def cam_selection(data, selected_rows):
     
     aux = pd.DataFrame(data)
-    return gen_map(aux)
+    
+    if not aux.empty:
+        return {
+            "data": [{
+                    "type": "scattermapbox",
+                    "lat": list(aux['lat']),
+                    "lon": list(aux['lon']),
+                    "hoverinfo": "text",
+                    "hovertext": [["Track ID: {} <br>Track class: {} <br>Time: {}".format(i,j,k)]
+                                    for i,j,k in zip(aux['track_id'], aux['track_class'],aux['time'])],
+                    "mode": "markers",
+                    "name": list(aux['track_id']),
+                    "marker": {
+                        "size": 6,
+                        "opacity": 0.7
+                    }
+            }],
+            "layout": layout_map
+        }
+                    
+    return aux
 
 @app.callback(
 Output('datatable', 'data'),
@@ -290,7 +297,7 @@ Output('datatable', 'data'),
  Input('slice', 'value')])
 def update_selected_row(track_class, cam, selected_rows, day, slice):
     
-    map_aux = app.df.copy()    
+    map_aux = df.copy()    
     map_aux = map_aux[map_aux['track_class'].astype(int).isin(track_class)]
     map_aux = map_aux[map_aux['cam'].isin(cam)]    
     map_aux = map_aux[map_aux['index'].isin(selected_rows)]
