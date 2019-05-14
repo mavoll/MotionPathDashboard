@@ -2,7 +2,7 @@
 Dashboard to analyse and vizualize detection and tracking results
 
 <p align="center">
-  <img src="/images/dashboard_1.png" width="500" align="middle">
+  <img src="/images/dashboard_1.png" width="800" align="middle">
 </p>
 
 ## Install
