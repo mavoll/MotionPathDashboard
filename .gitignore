@@ -3,3 +3,4 @@
 .spyproject/encoding.ini
 .spyproject/vcs.ini
 .spyproject/workspace.ini
+*.pyc
