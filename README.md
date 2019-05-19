@@ -3,7 +3,7 @@ Dashboard to analyse and vizualize detection and tracking results
 
 ## Install
 
-Install PostGIS (see MotionPathExtraction)
+Install PostGIS (see MotionPathExtraction){https://github.com/mavoll/MotionPathsExtraction} and create table.
 ```
 conda create --name dash python=3.6
 conda activate dash
@@ -14,7 +14,6 @@ pip install dash
 pip install plotly --upgrade
 
 pip install psycopg2
-pip install shapely
 pip install geopandas
 
 python index.py
