@@ -1,10 +1,6 @@
 # MotionPathDashboard
 Dashboard to analyse and vizualize detection and tracking results
 
-<p align="center">
-  <img src="/images/dashboard_1.png" width="800" align="middle">
-</p>
-
 ## Install
 
 Install PostGIS (see MotionPathExtraction)
@@ -23,6 +19,35 @@ pip install geopandas
 
 python index.py
 ```
+
+## Apps
+
+### Raw data
+
+<p align="center">
+  <img src="/images/dashboard_1.png" width="800" align="middle">
+</p>
+
+- Data source: 
+
+PostGIS data table:
+```
+CREATE TABLE postgis.tracks_points_per_sec
+(
+  slice text NOT NULL,
+  cam text NOT NULL,
+  day text NOT NULL,
+  part integer NOT NULL,
+  subpart integer NOT NULL,
+  track_id integer NOT NULL,
+  time timestamp NOT NULL,
+  track_class text NOT NULL,
+  geom geometry(Point, 5555) NOT NULL,
+  PRIMARY KEY (slice, cam, day, part, subpart, track_id, time)
+);
+
+```
+  
 
 ## What we have and what we want?
 
