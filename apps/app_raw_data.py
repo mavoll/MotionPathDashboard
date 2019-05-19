@@ -130,7 +130,10 @@ layout = html.Div(
         html.Div(
             [
                 html.H1(children='SmartSquare - Movement Raw Data',
-                        className='nine columns')
+                        style={
+                            'textAlign': 'center'
+                        },
+                        className='twelve columns')
                 
             ], className="row"
         ),    
