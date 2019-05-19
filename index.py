@@ -4,6 +4,7 @@ from dash.dependencies import Input, Output
 
 from app import app
 from apps import app_raw_data
+from apps import app_animate
 
 
 app.layout = html.Div([
@@ -11,10 +12,12 @@ app.layout = html.Div([
     html.Div(id='page-content')
 ])
 
-index_page = html.Div([
+index_page = html.Div([    
+    dcc.Link('Go to Animation', href='/animation'),
+    html.Br(),
     dcc.Link('Go to Statistics', href='/statistics'),
     html.Br(),
-    dcc.Link('Go to Indicators', href='/indicators'),
+    dcc.Link('Go to Indicators', href='/indicators')
 ])
 
 
@@ -27,6 +30,8 @@ def display_page(pathname):
         return app_raw_data.layout
     if pathname == '/indicators':
         return app_raw_data.layout
+    if pathname == '/animation':
+        return app_animate.layout
     else:
         return '404'
 

@@ -2,7 +2,8 @@ import dash_table as dt
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
-
+from datetime import datetime
+import colorsys
 import pandas as pd
 import geopandas as gpd
 from plotly import graph_objs as go
@@ -29,10 +30,17 @@ df = gpd.GeoDataFrame.from_postgis(sql, app.db.connection, geom_col='geom' )
 df = df.to_crs('epsg:4326')
 df['lon'] = df['geom'].y
 df['lat'] = df['geom'].x
-#df['time'] = df['time'].astype(str)
+df['track_class_name'] = [classes[classs] for classs in df['track_class'].astype(int)]
 del df['geom']
-df.sort_values(['time','track_id'], axis=0, ascending=True, inplace=True)
+#df['time'] = pd.to_datetime(df['time'])
 df['index'] = df.index
+df.sort_values(['time','index'])
+#df.set_index(['time', 'index'], inplace=True)
+#df.sort_index(inplace=True)
+
+#Slider
+seconds = list(set(df['time'].astype(int)))
+seconds.sort()
 
 #  Layouts
 layout_table = dict(
@@ -57,7 +65,8 @@ layout_table['margin-top'] = '20'
 
 layout_map = dict(
     autosize=True,
-    height=500,
+    height=700,
+    animate=True,
     font=dict(color="#191A1A"),
     titlefont=dict(color="#191A1A", size='14'),
     margin=dict(
@@ -83,21 +92,41 @@ layout_map = dict(
 
 layout_pies = dict(
     
-    title='Number tracks per cam / class / day / slice',
-    showlegend=True,
+    title='Num tracks per cam or slice',
+    showlegend=False,
     dragmode="select",
     autosize=True,
-    height=500, 
+    height=700,
+    
+)
+
+layout_pies2 = dict(
+    
+    title='Num tracks per track_class or day',
+    showlegend=False,
+    dragmode="select",
+    autosize=True,
+    height=700,
+    
+)
+
+layout_lines = dict(
+    
+    title='Number tracks per class over time',
+    showlegend=False,
+    dragmode="select",
+    autosize=True,
+    height=300,
     
 )
 
 layout = html.Div(
     html.Div([
         html.Div(id='page-1-content'),
-        html.Br(),
-        dcc.Link('Go to indicators', href='/indicators'),
-        html.Br(),
-        dcc.Link('Go to statistics', href='/'),
+        dcc.Link('Raw data | ', href='/'),
+        dcc.Link('Animation | ', href='/animation'),
+        dcc.Link('Statistics | ', href='/statistics'),
+        dcc.Link('Indicators', href='/indicators'),
         html.Div(
             [
                 html.H1(children='SmartSquare - Movement Raw Data',
@@ -180,10 +209,46 @@ layout = html.Div(
                 )
             ],
             className='row'
-        ),    
+        ),
+        html.Br(),
+        html.Div([
+				dcc.RangeSlider(
+					id='slider',
+					min=min(seconds),
+					max=max(seconds),
+                    step=60000000000,
+                    updatemode='mouseup', #'drag' 
+                    pushable=True,
+					value=[min(seconds) , max(seconds)],
+					marks={int(timestamp): datetime.fromtimestamp(timestamp/1000000000) for timestamp in seconds[::60]},
+				),
+			], className='twelve columns'),
+        html.Br(),
+        html.Br(),
+        html.Div([
+				dcc.Slider(
+					id='slider2',
+					min=min(seconds),
+					max=max(seconds),
+					value=min(seconds),
+					marks={int(timestamp): str(i) + 'min' for i, timestamp in enumerate(seconds[::60])},
+                    step=1,
+                    disabled=False,
+                    updatemode='drag', #'drag'
+				),
+			], className='twelve columns'),
+        html.Br(),
+        html.Br(),
+        html.Br(),
         # Map + table + Histogram
         html.Div(
             [
+                html.Div([
+                    dcc.Graph(
+                        id='bar-graph',
+                    )
+                ], className= 'three columns'
+                ),
                 html.Div(
                     [
                         dcc.Graph(id='map-graph',
@@ -192,22 +257,26 @@ layout = html.Div(
                 ),
                 html.Div([
                     dcc.Graph(
-                        id='bar-graph',
+                        id='bar-graph2',
                     )
-                ], className= 'six columns'
+                ], className= 'three columns'
                 ),
+                html.Div([
+                    dcc.Graph(
+                        id="line-graph")]
+                    , className="twelve columns"
+                    ),
                 html.Div(
                     [
                         dt.DataTable(
                             id='datatable',
                             columns=[{"name": i, "id": i} for i in df.columns],
-                            data=df.to_dict("rows"),
-                            selected_rows=list(df.index.values) ,#[],
+                            data=df.to_dict(orient='records'),
+                            selected_rows=[],#list(df['index'].astype(int)) ,#[],
                             editable=False,
                             filtering=True,
                             sorting=True,
                             sorting_type="multi",
-                            row_selectable='multi',
                             style_cell={'padding': '5px'},
                             style_table={
                                 
@@ -260,95 +329,164 @@ layout = html.Div(
    ], className='ten columns offset-by-one'))
 
 @app.callback(
-Output('map-graph', 'figure'),
-[Input('datatable', 'data'),
- Input('datatable', 'selected_rows')])
-def cam_selection(data, selected_rows):
-    
-    aux = pd.DataFrame(data)
-    
-    if not aux.empty:
-        return {
-            "data": [{
-                    "type": "scattermapbox",
-                    "lat": list(aux['lat']),
-                    "lon": list(aux['lon']),
-                    "hoverinfo": "text",
-                    "hovertext": [["Track ID: {} <br>Track class: {} <br>Time: {}".format(i,j,k)]
-                                    for i,j,k in zip(aux['track_id'], aux['track_class'],aux['time'])],
-                    "mode": "markers",
-                    "name": list(aux['track_id']),
-                    "marker": {
-                        "size": 6,
-                        "opacity": 0.7
-                    }
-            }],
-            "layout": layout_map
-        }
-                    
-    return aux
-
-@app.callback(
 Output('datatable', 'data'),
 [Input('track_class', 'value'),
  Input('cam', 'values'),
- Input('datatable', 'selected_rows'),
  Input('day', 'value'),
- Input('slice', 'value')])
-def update_selected_row(track_class, cam, selected_rows, day, slice):
+ Input('slice', 'value'),
+ Input('slider', 'value'),
+ Input('slider2', 'value')])
+def update_dataframe(track_class, cam, day, slice, slider, slider2):
+                    
+    tmp = df.copy()
+    if min(tmp['time'].astype(int)) < int(slider2 / 1000000000) * 1000000000:
+        tmp = tmp[tmp['time'].astype(int) == int(slider2 / 1000000000) * 1000000000]
+    tmp = tmp[tmp['time'].astype(int) >= slider[0]]
+    tmp = tmp[tmp['time'].astype(int) <= slider[1]]        
+    tmp = tmp[tmp['day'].isin(day)]    
+    tmp = tmp[tmp['cam'].isin(cam)] 
+    tmp = tmp[tmp['slice'].isin(slice)]
+    tmp = tmp[tmp['track_class'].astype(int).isin(track_class)] 
     
-    map_aux = df.copy()    
-    map_aux = map_aux[map_aux['track_class'].astype(int).isin(track_class)]
-    map_aux = map_aux[map_aux['cam'].isin(cam)]    
-    map_aux = map_aux[map_aux['index'].isin(selected_rows)]
-    map_aux = map_aux[map_aux['day'].isin(day)]
-    map_aux = map_aux[map_aux['slice'].isin(slice)]
+    return tmp.to_dict(orient='records')
+
     
-    data = map_aux.to_dict("rows")
-    return data
+@app.callback(
+Output('map-graph', 'figure'),
+[Input('datatable', 'data')])
+def update_map(data):
+    
+    aux = pd.DataFrame(data)
+    data = []
+    
+    if not aux.empty:
+        
+        for class_s in list(set(aux['track_class_name'])):
+            tmp = aux[aux['track_class_name'] == class_s]
+            data.append(
+                        dict(
+                                type= 'scattermapbox',
+                                lat= list(tmp['lat']),
+                                lon= list(tmp['lon']),
+                                hoverinfo= "text",
+                                hovertext= [["Track ID: {} <br>Track class: {} <br>Time: {}".format(i,j,k)]
+                                                for i,j,k in zip(tmp['track_id'], tmp['track_class_name'],tmp['time'])],
+                                mode= "markers",
+                                name= class_s,
+                                marker= dict(
+                                    color= create_unique_color_int(int(hash(class_s))),
+                                    size= 6,
+                                    opacity= 0.7,
+                                )
+                            )
+                        )
+        
+        return dict(data= data, layout= layout_map)
+            
 
 @app.callback(
 Output('bar-graph', 'figure'),
-[Input('datatable', 'data'),
- Input('datatable', 'selected_rows')])
-def update_figure(data, selected_rows):
+[Input('datatable', 'data')])
+def update_bar_graph(data):
     dff = pd.DataFrame(data)    
     
     if not dff.empty:
-        data = go.Data([
-             go.Pie(
-                 labels= dff.groupby('cam', as_index = False).count()['cam'],
-                 values = dff.groupby('cam', as_index = False).count()['track_id'],
+        grouped = dff.groupby('cam', as_index = False).count()
+        grouped2 = dff.groupby('slice', as_index = False).count()
+        
+        data = [
+             dict(
+                 type='pie',
+                 labels= grouped['cam'],
+                 values = grouped['index'],
+                 textinfo = 'label+value+percent',
                  domain=dict(
-                    x= [0, .48],
+                    x= [0, 1],
                     y= [.52, 1]),
                  
                  ),
-             go.Pie(
-                 labels= dff.groupby('track_class', as_index = False).count()['track_class'],
-                 values = dff.groupby('track_class', as_index = False).count()['index'],
+             dict(
+                 type='pie',
+                 labels= grouped2['slice'],
+                 values = grouped2['index'],
+                 textinfo = 'label+value+percent',
                  domain=dict(
-                    x= [.52, 1],
-                    y= [.52, 1]),
-                 
-                 ),
-            go.Pie(
-                 labels= dff.groupby('day', as_index = False).count()['day'],
-                 values = dff.groupby('day', as_index = False).count()['index'],
-                 domain=dict(
-                    x= [0, .48],
+                    x= [0, 1],
                     y= [0, .49]),
                  
                  ),
-             go.Pie(
-                 labels= dff.groupby('slice', as_index = False).count()['slice'],
-                 values = dff.groupby('slice', as_index = False).count()['index'],
-                 domain=dict(
-                    x= [.52, 1],
-                    y= [0, .49]),
-                 
-                 )    
-             ,
-         ])
+         ]
         
         return go.Figure(data=data, layout=layout_pies)
+    
+@app.callback(
+Output('bar-graph2', 'figure'),
+[Input('datatable', 'data')])
+def update_bar_graph2(data):
+    dff = pd.DataFrame(data)    
+    
+    if not dff.empty:
+        
+        grouped = dff.groupby('track_class_name', as_index = False).count()
+        grouped2 = dff.groupby('day', as_index = False).count()
+        data = [             
+             dict(
+                 type='pie',
+                 labels= grouped['track_class_name'],
+                 values = grouped['index'],
+                 textinfo = 'label+value+percent',
+                 marker=dict(
+                         colors= [create_unique_color_int(int(hash(name))) for name in grouped['track_class_name']], #create_unique_color_int(int(hash(grouped['track_class_name']))),
+                 ),
+                 domain=dict(
+                    x= [0, 1],
+                    y= [.52, 1]),
+                 
+                 ),
+            dict(
+                 type='pie',
+                 labels= grouped2['day'],
+                 values = grouped2['index'],
+                 textinfo = 'label+value+percent',
+                 domain=dict(
+                    x= [0, 1],
+                    y= [0, .49]),
+                 
+                 ), 
+         ]
+        
+        return go.Figure(data=data, layout=layout_pies2)
+    
+@app.callback(
+Output('line-graph', 'figure'),
+[Input('datatable', 'data')])
+def update_line_graph(data):
+    dff = pd.DataFrame(data)  
+    if not dff.empty:
+        data = []     
+        grouped = dff.groupby(['track_class_name'], as_index = False)
+        for name, group in grouped:
+           group = group.sort_values(['time'])    
+           if not group.empty:
+               data.append(
+                     dict(
+                         type='scatter',
+                         mode='lines',
+                         x= group.copy().groupby(['time'], as_index = False).count()['time'],
+                         y= group.copy().groupby(['time'], as_index = False).count()['index'],
+                         name= name, 
+                         line = dict(
+                             color= create_unique_color_int(int(hash(name))),
+                             width = 2,
+                             dash = 'dot')
+                             )
+                 )
+        
+        return go.Figure(data=data, layout=layout_lines)
+    
+def create_unique_color_int(tag, hue_step=0.0000000001):
+
+    h, v, = (tag * hue_step) % 1, 1. - (int(tag * hue_step) % 4) / 5.
+    r, g, b = colorsys.hsv_to_rgb(h, 1., v)
+
+    return 'rgba(' + str(int(255 * r)) + ',' + str(int(255 * g)) + ',' + str(int(255 * b))+ ',1)'
