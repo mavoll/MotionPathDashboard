@@ -4,7 +4,6 @@ import dash_core_components as dcc
 import dash_html_components as html
 from datetime import datetime
 import colorsys
-import pandas as pd
 import geopandas as gpd
 from plotly import graph_objs as go
 
@@ -366,7 +365,7 @@ Output('map-graph', 'figure'),
 [Input('datatable', 'data')])
 def update_map(data):
     
-    aux = pd.DataFrame(data)
+    aux = gpd.GeoDataFrame(data)
     data = []
     
     if not aux.empty:
@@ -399,7 +398,7 @@ Output('bar-graph', 'figure'),
 [Input('datatable', 'data')])
 def update_bar_graph(data):
     
-    dff = pd.DataFrame(data)    
+    dff = gpd.GeoDataFrame(data)    
     data = []
     
     if not dff.empty:
@@ -436,7 +435,7 @@ Output('bar-graph2', 'figure'),
 [Input('datatable', 'data')])
 def update_bar_graph2(data):
     
-    dff = pd.DataFrame(data)    
+    dff = gpd.GeoDataFrame(data)    
     data=[]
     
     if not dff.empty:
@@ -476,7 +475,7 @@ Output('line-graph', 'figure'),
 [Input('datatable', 'data')])
 def update_line_graph(data):
     
-    dff = pd.DataFrame(data)  
+    dff = gpd.GeoDataFrame(data)  
     data=[]
     
     
