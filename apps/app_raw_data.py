@@ -139,21 +139,20 @@ layout = html.Div(
             [
                 html.Div(
                     [
-                        dcc.Checklist(
+                        dcc.Dropdown(
                                 id = 'cam',
                                 options=[
                                     {'label': 'DesignOffices', 'value': 'designOffices'},
                                     {'label': 'Kirchvorplatz', 'value': 'kirchvorplatz'},
                                     {'label': 'KreuzungDomplatz', 'value': 'kreuzungDomplatz'}
                                 ],
-                                values=['designOffices', 'kirchvorplatz', 'kreuzungDomplatz'],
-                                labelStyle={'display': 'inline-block'}
+                                value=['designOffices', 'kirchvorplatz', 'kreuzungDomplatz'],
+                                multi=True
                         ),
                     ],
                     className='six columns'
                 ),                
             ],
-            className='row'
         ),
         
         # Selectors
@@ -190,7 +189,6 @@ layout = html.Div(
                     className='six columns',
                 )
             ],
-            className='row'
         ),
         # Selectors
         html.Div(
@@ -331,7 +329,7 @@ layout = html.Div(
 @app.callback(
 Output('datatable', 'data'),
 [Input('track_class', 'value'),
- Input('cam', 'values'),
+ Input('cam', 'value'),
  Input('day', 'value'),
  Input('slice', 'value'),
  Input('slider', 'value'),
