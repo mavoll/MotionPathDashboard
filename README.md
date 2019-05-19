@@ -1,5 +1,5 @@
 # MotionPathDashboard
-Dashboard to analyse and vizualize detection and tracking results
+Dashboard to analyse and vizualize detection and tracking results (using Dash by Plotly)
 
 ## Install
 
@@ -19,7 +19,7 @@ pip install geopandas
 python index.py
 ```
 
-## Apps
+## Apps (created with Dash by Plotly)
 
 ### Raw data
 
