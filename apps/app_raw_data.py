@@ -501,7 +501,7 @@ def update_line_graph(data):
         for name, group in grouped:
            group = group.sort_values(['time'])    
            if not group.empty:
-               group_count = group.copy().groupby(['time'], as_index = True).count()['index']
+               group_count = group.groupby(['time'], as_index = True).count()['index']
                data.append(
                      dict(
                          type='scatter',
@@ -533,7 +533,7 @@ def update_line_graph2(data):
            group = group.sort_values(['minute'])    
            group
            if not group.empty:
-               group_count = group.copy().groupby(['minute'], as_index = True).count()['index']
+               group_count = group.groupby(['minute'], as_index = True).count()['index']
                
                data.append(
                      dict(
