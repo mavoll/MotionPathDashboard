@@ -147,7 +147,8 @@ layout = html.Div(
                                 options=[
                                     {'label': 'DesignOffices', 'value': 'designOffices'},
                                     {'label': 'Kirchvorplatz', 'value': 'kirchvorplatz'},
-                                    {'label': 'KreuzungDomplatz', 'value': 'kreuzungDomplatz'}
+                                    {'label': 'KreuzungDomplatz', 'value': 'kreuzungDomplatz'},
+                                    {'label': 'Backhus', 'value': 'backhus'}
                                 ],
                                 value=['designOffices', 'kirchvorplatz', 'kreuzungDomplatz'],
                                 multi=True
@@ -217,7 +218,7 @@ layout = html.Div(
 					id='slider',
 					min=min(seconds),
 					max=max(seconds),
-                    step=60000000000,
+                    step=1000000000,
                     updatemode='mouseup', #'drag' 
                     pushable=True,
 					value=[min(seconds) , max(seconds)],
@@ -277,6 +278,7 @@ layout = html.Div(
                             editable=False,
                             filtering=True,
                             sorting=True,
+                            row_selectable="multi",
                             sorting_type="multi",
                             style_cell={'padding': '5px'},
                             style_table={
@@ -336,14 +338,21 @@ Output('datatable', 'data'),
  Input('day', 'value'),
  Input('slice', 'value'),
  Input('slider', 'value'),
- Input('slider2', 'value')])
-def update_dataframe(track_class, cam, day, slice, slider, slider2):
+ Input('slider2', 'value'),
+ Input('datatable', 'selected_rows')])
+def update_dataframe(track_class, cam, day, slice, slider, slider2, selected_rows):
                     
     tmp = df.copy()
+    
+    if len(selected_rows) > 0:
+        tmp = tmp[tmp['index'].astype(int).isin(selected_rows)]
+        
     if min(tmp['time'].astype(int)) < int(slider2 / 1000000000) * 1000000000:
         tmp = tmp[tmp['time'].astype(int) == int(slider2 / 1000000000) * 1000000000]
+    
     tmp = tmp[tmp['time'].astype(int) >= slider[0]]
-    tmp = tmp[tmp['time'].astype(int) <= slider[1]]        
+    tmp = tmp[tmp['time'].astype(int) <= slider[1]]
+                
     tmp = tmp[tmp['day'].isin(day)]    
     tmp = tmp[tmp['cam'].isin(cam)] 
     tmp = tmp[tmp['slice'].isin(slice)]
@@ -382,14 +391,16 @@ def update_map(data):
                             )
                         )
         
-        return dict(data= data, layout= layout_map)
+    return dict(data= data, layout= layout_map)
             
 
 @app.callback(
 Output('bar-graph', 'figure'),
 [Input('datatable', 'data')])
 def update_bar_graph(data):
+    
     dff = pd.DataFrame(data)    
+    data = []
     
     if not dff.empty:
         grouped = dff.groupby('cam', as_index = False).count()
@@ -418,13 +429,15 @@ def update_bar_graph(data):
                  ),
          ]
         
-        return go.Figure(data=data, layout=layout_pies)
+    return go.Figure(data=data, layout=layout_pies)
     
 @app.callback(
 Output('bar-graph2', 'figure'),
 [Input('datatable', 'data')])
 def update_bar_graph2(data):
+    
     dff = pd.DataFrame(data)    
+    data=[]
     
     if not dff.empty:
         
@@ -456,25 +469,30 @@ def update_bar_graph2(data):
                  ), 
          ]
         
-        return go.Figure(data=data, layout=layout_pies2)
+    return go.Figure(data=data, layout=layout_pies2)
     
 @app.callback(
 Output('line-graph', 'figure'),
 [Input('datatable', 'data')])
 def update_line_graph(data):
+    
     dff = pd.DataFrame(data)  
+    data=[]
+    
+    
     if not dff.empty:
         data = []     
         grouped = dff.groupby(['track_class_name'], as_index = False)
         for name, group in grouped:
            group = group.sort_values(['time'])    
            if not group.empty:
+               group_count = group.copy().groupby(['time'], as_index = True).count()['index']
                data.append(
                      dict(
                          type='scatter',
                          mode='lines',
-                         x= group.copy().groupby(['time'], as_index = False).count()['time'],
-                         y= group.copy().groupby(['time'], as_index = False).count()['index'],
+                         x= group_count.index.tolist(),#group.copy().groupby(['time'], as_index = False).count()['time'],
+                         y= group_count,#group.copy().groupby(['time'], as_index = False).count()['index'],
                          name= name, 
                          line = dict(
                              color= create_unique_color_int(int(hash(name))),
@@ -483,7 +501,7 @@ def update_line_graph(data):
                              )
                  )
         
-        return go.Figure(data=data, layout=layout_lines)
+    return go.Figure(data=data, layout=layout_lines)
     
 def create_unique_color_int(tag, hue_step=0.0000000001):
 
