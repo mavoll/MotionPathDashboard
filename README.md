@@ -44,9 +44,9 @@ CREATE TABLE postgis.tracks_points_per_sec
 );
 
 ```
-Here the sample csv file and the import script from (MotionPathExtraction){https://github.com/mavoll/MotionPathsExtraction/tree/master/scripts} is used for demo. Accessing through `geopandas.GeoDataFrame.from_postgis()` function.
+Here the sample csv file and the import script from [MotionPathExtraction](https://github.com/mavoll/MotionPathsExtraction/tree/master/scripts) is used for demo. Accessing through `geopandas.GeoDataFrame.from_postgis()` function.
 
-Fetching data from [SparkPipeline]{https://github.com/mavoll/SparkPipeline} through `pyspark` is coming later for bigger data sets.
+Fetching data from [SparkPipeline](https://github.com/mavoll/SparkPipeline) through `pyspark` is coming later for bigger data sets.
 
 Components:
 - Dropdown (multi select)
