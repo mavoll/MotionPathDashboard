@@ -28,8 +28,6 @@ python index.py
   <img src="/images/dashboard_1.png" width="800" align="middle">
 </p>
 
-- Data source: 
-
 PostGIS data table:
 ```
 CREATE TABLE postgis.tracks_points_per_sec
@@ -47,7 +45,18 @@ CREATE TABLE postgis.tracks_points_per_sec
 );
 
 ```
-  
+Here the sample csv file and the import script from (MotionPathExtraction){https://github.com/mavoll/MotionPathsExtraction/tree/master/scripts} is used for demo. Accessing through `geopandas.GeoDataFrame.from_postgis()` function.
+
+Fetching data from [SparkPipeline]{https://github.com/mavoll/SparkPipeline} through `pyspark` is coming later for bigger data sets.
+
+Components:
+- Dropdown (multi select)
+- Time RangeSlider
+- Time Slider
+- Scattermapbox
+- DataTable
+- Pie
+- Scatter (mode='lines')
 
 ## What we have and what we want?
 
