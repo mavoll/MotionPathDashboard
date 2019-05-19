@@ -5,6 +5,7 @@ import dash_html_components as html
 from datetime import datetime
 import colorsys
 import geopandas as gpd
+import pandas as pd
 from plotly import graph_objs as go
 
 from app import app
@@ -33,6 +34,7 @@ df['track_class_name'] = [classes[classs] for classs in df['track_class'].astype
 del df['geom']
 #df['time'] = pd.to_datetime(df['time'])
 df['index'] = df.index
+df['minute'] = df['time'].dt.strftime('%Y-%m-%d %H:%M:00')
 df.sort_values(['time','index'])
 #df.set_index(['time', 'index'], inplace=True)
 #df.sort_index(inplace=True)
@@ -91,7 +93,7 @@ layout_map = dict(
 
 layout_pies = dict(
     
-    title='Num tracks per cam and slice',
+    title='Num points per cam and slice',
     showlegend=False,
     dragmode="select",
     autosize=True,
@@ -101,7 +103,7 @@ layout_pies = dict(
 
 layout_pies2 = dict(
     
-    title='Num tracks per class and day',
+    title='Num points per class and day',
     showlegend=False,
     dragmode="select",
     autosize=True,
@@ -111,7 +113,17 @@ layout_pies2 = dict(
 
 layout_lines = dict(
     
-    title='Number tracks per class over time (sec)',
+    title='Number tracks per class and second over time',
+    showlegend=False,
+    dragmode="select",
+    autosize=True,
+    height=300,
+    
+)
+
+layout_lines2 = dict(
+    
+    title='Average number tracks per class and minute over time',
     showlegend=False,
     dragmode="select",
     autosize=True,
@@ -266,7 +278,12 @@ layout = html.Div(
                     dcc.Graph(
                         id="line-graph")]
                     , className="twelve columns"
-                    ),
+                ),                
+                html.Div([
+                    dcc.Graph(
+                        id="line-graph2")]
+                    , className="twelve columns"
+                ),
                 html.Div(
                     [
                         dt.DataTable(
@@ -480,7 +497,6 @@ def update_line_graph(data):
     
     
     if not dff.empty:
-        data = []     
         grouped = dff.groupby(['track_class_name'], as_index = False)
         for name, group in grouped:
            group = group.sort_values(['time'])    
@@ -501,7 +517,40 @@ def update_line_graph(data):
                  )
         
     return go.Figure(data=data, layout=layout_lines)
+
+@app.callback(
+Output('line-graph2', 'figure'),
+[Input('datatable', 'data')])
+def update_line_graph2(data):
     
+    dff = gpd.GeoDataFrame(data)  
+    data=[]
+    
+    
+    if not dff.empty:
+        grouped = dff.groupby(['track_class_name'], as_index = False)
+        for name, group in grouped:
+           group = group.sort_values(['minute'])    
+           group
+           if not group.empty:
+               group_count = group.copy().groupby(['minute'], as_index = True).count()['index']
+               
+               data.append(
+                     dict(
+                         type='scatter',
+                         mode='lines',
+                         x= [pd.to_datetime(i) + pd.Timedelta(minutes=1) for i in group_count.index.tolist()],#group_count.index.tolist(),#group.copy().groupby(['time'], as_index = False).count()['time'],
+                         y= group_count.div(60),#group.copy().groupby(['time'], as_index = False).count()['index'],
+                         name= name, 
+                         line = dict(
+                             color= create_unique_color_int(int(hash(name))),
+                             width = 2,
+                             dash = 'dot')
+                             )
+                 )
+        
+    return go.Figure(data=data, layout=layout_lines2)
+
 def create_unique_color_int(tag, hue_step=0.0000000001):
 
     h, v, = (tag * hue_step) % 1, 1. - (int(tag * hue_step) % 4) / 5.
