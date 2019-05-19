@@ -1,13 +1,9 @@
 # MotionPathDashboard
 Dashboard to analyse and vizualize detection and tracking results
 
-<p align="center">
-  <img src="/images/dashboard_1.png" width="800" align="middle">
-</p>
-
 ## Install
 
-Install PostGIS (see MotionPathExtraction)
+Install PostGIS (see MotionPathExtraction){https://github.com/mavoll/MotionPathsExtraction} and create table.
 ```
 conda create --name dash python=3.6
 conda activate dash
@@ -18,11 +14,48 @@ pip install dash
 pip install plotly --upgrade
 
 pip install psycopg2
-pip install shapely
 pip install geopandas
 
 python index.py
 ```
+
+## Apps
+
+### Raw data
+
+<p align="center">
+  <img src="/images/dashboard_1.png" width="800" align="middle">
+</p>
+
+PostGIS data table:
+```
+CREATE TABLE postgis.tracks_points_per_sec
+(
+  slice text NOT NULL,
+  cam text NOT NULL,
+  day text NOT NULL,
+  part integer NOT NULL,
+  subpart integer NOT NULL,
+  track_id integer NOT NULL,
+  time timestamp NOT NULL,
+  track_class text NOT NULL,
+  geom geometry(Point, 5555) NOT NULL,
+  PRIMARY KEY (slice, cam, day, part, subpart, track_id, time)
+);
+
+```
+Here the sample csv file and the import script from [MotionPathExtraction](https://github.com/mavoll/MotionPathsExtraction/tree/master/scripts) is used for demo. Accessing through `geopandas.GeoDataFrame.from_postgis()` function.
+
+Fetching data from [SparkPipeline](https://github.com/mavoll/SparkPipeline) through `pyspark` is coming later for bigger data sets.
+
+Components:
+- Dropdown (multi select)
+- Time RangeSlider
+- Time Slider
+- Scattermapbox
+- DataTable
+- Pie
+- Scatter (mode='lines')
 
 ## What we have and what we want?
 
@@ -113,3 +146,11 @@ to do:
 - Calc statistics
 - Plot basic statistics on Dashboard
 - more coming 
+
+## Further development and research opportunities
+
+## Authors
+
+* **Marc-André Vollstedt** - marc.vollstedt@gmail.com
+
+## Acknowledgments
