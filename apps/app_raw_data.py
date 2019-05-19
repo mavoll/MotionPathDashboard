@@ -83,16 +83,16 @@ layout_map = dict(
         accesstoken=app.mapbox_access_token,
         style="light",
         center=dict(
-            lon=9.997399,
-            lat=53.549517
+            lon=9.996806,
+            lat=53.549535
         ),
-        zoom=16.8,
+        zoom=17.2,
     )
 )
 
 layout_pies = dict(
     
-    title='Num tracks per cam or slice',
+    title='Num tracks per cam and slice',
     showlegend=False,
     dragmode="select",
     autosize=True,
@@ -102,7 +102,7 @@ layout_pies = dict(
 
 layout_pies2 = dict(
     
-    title='Num tracks per track_class or day',
+    title='Num tracks per class and day',
     showlegend=False,
     dragmode="select",
     autosize=True,
@@ -112,7 +112,7 @@ layout_pies2 = dict(
 
 layout_lines = dict(
     
-    title='Number tracks per class over time',
+    title='Number tracks per class over time (sec)',
     showlegend=False,
     dragmode="select",
     autosize=True,
@@ -276,7 +276,7 @@ layout = html.Div(
                             data=df.to_dict(orient='records'),
                             selected_rows=[],#list(df['index'].astype(int)) ,#[],
                             editable=False,
-                            filtering=True,
+                            filtering=False,
                             sorting=True,
                             row_selectable="multi",
                             sorting_type="multi",
