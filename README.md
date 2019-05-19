@@ -146,3 +146,11 @@ to do:
 - Calc statistics
 - Plot basic statistics on Dashboard
 - more coming 
+
+## Further development and research opportunities
+
+## Authors
+
+* **Marc-André Vollstedt** - marc.vollstedt@gmail.com
+
+## Acknowledgments
