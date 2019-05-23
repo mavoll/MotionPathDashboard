@@ -40,7 +40,7 @@ CREATE TABLE postgis.tracks_points_per_sec
   time timestamp NOT NULL,
   track_class text NOT NULL,
   geom geometry(Point, 5555) NOT NULL,
-  PRIMARY KEY (slice, cam, day, part, subpart, track_id, time)
+  PRIMARY KEY (slice, cam, day, part, subpart, track_id)
 );
 
 ```
@@ -56,6 +56,27 @@ Components:
 - DataTable
 - Pie
 - Scatter (mode='lines')
+
+### Twitter data
+
+<p align="center">
+  <img src="/images/dashboard_twitter.png" width="800" align="middle">
+</p>
+
+PostGIS data table:
+```
+CREATE TABLE twitter_points
+(
+  city text NOT NULL,
+  year integer NOT NULL,
+  month integer NOT NULL,
+  username text NOT NULL,
+  tweetid bigint NOT NULL,
+  createdat timestamp NOT NULL,
+  geom geometry(Point, 4326) NOT NULL,
+  PRIMARY KEY (createdat, tweetid)
+);
+```
 
 ## What we have and what we want?
 

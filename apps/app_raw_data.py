@@ -25,8 +25,10 @@ classes = ['', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
             'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase',
             'scissors', 'teddy bear', 'hair drier', 'toothbrush']
 
-sql = "SELECT cam, day, slice, part, subpart, track_id, time, track_class, geom FROM tracks_points_per_sec"
-df = gpd.GeoDataFrame.from_postgis(sql, app.db.connection, geom_col='geom' )
+
+sql = "SELECT cam, day, slice, part, subpart, track_id, time, track_class, geom FROM tracks_points_sec"
+df = gpd.GeoDataFrame.from_postgis(sql, app.connection, geom_col='geom' )
+#df.crs = {'init': 'epsg:4326'}
 df = df.to_crs('epsg:4326')
 df['lon'] = df['geom'].y
 df['lat'] = df['geom'].x
@@ -135,9 +137,9 @@ layout = html.Div(
     html.Div([
         html.Div(id='page-1-content'),
         dcc.Link('Raw data | ', href='/'),
-        dcc.Link('Animation | ', href='/animation'),
         dcc.Link('Statistics | ', href='/statistics'),
-        dcc.Link('Indicators', href='/indicators'),
+        dcc.Link('Indicators |', href='/indicators'),
+        dcc.Link('Twitter', href='/twitter'),
         html.Div(
             [
                 html.H1(children='SmartSquare - Movement Raw Data',

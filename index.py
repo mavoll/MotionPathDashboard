@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 
 from app import app
 from apps import app_raw_data
-from apps import app_animate
+from apps import app_twitter
 
 
 app.layout = html.Div([
@@ -30,8 +30,8 @@ def display_page(pathname):
         return app_raw_data.layout
     if pathname == '/indicators':
         return app_raw_data.layout
-    if pathname == '/animation':
-        return app_animate.layout
+    if pathname == '/twitter':
+        return app_twitter.layout
     else:
         return '404'
 
