@@ -1,0 +1,6 @@
+Stations_ID;Von_Datum;Bis_Datum;Stationsname;Parameter;Parameterbeschreibung;Einheit;Datenquelle (Strukturversion=SV);Zusatz-Info;Besonderheiten;Literaturhinweis;eor;
+1975;19490101;19950930;Hamburg-Fuhlsbüttel;SD_SO;stdl. Sonnenscheindauer;;Daten der Sonnenscheindauer (Stundensummen) aus analogen Registrierungen (Campbell-Stokes);Stundenwerte in WOZ;;;eor;
+1975;19951001;20010331;Hamburg-Fuhlsbüttel;SD_SO;stdl. Sonnenscheindauer;;Daten der Sonnenscheindauer (Stundensummen) von automatischen Stationen der 1. Generation (MIRIAM/AFMS2, ESAU-Daten);Stundenwerte in WOZ;;;eor;
+1975;20010401;20190904;Hamburg-Fuhlsbüttel;SD_SO;stdl. Sonnenscheindauer;;Daten der Sonnenscheindauer (Stundensummen) generiert aus stündlichen SYNOP-Meldungen (nach 01.04.2001);Stundenwerte in UTC;;;eor;
+Legende: FT  = Folgetag; GZ = Gesetzliche Zeit
+generiert: 05.09.2019 --  Deutscher Wetterdienst  --

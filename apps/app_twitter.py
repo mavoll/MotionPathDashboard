@@ -8,25 +8,11 @@ import geopandas as gpd
 import pandas as pd
 from plotly import graph_objs as go
 
+from components import Header, Footer
 from app import app
 
-cql = "SELECT year, month, day, hour, createdAt, username, tweetId, geolocationlatitude, geolocationlongitude FROM tweets_hamburg_located WHERE year=2018 AND month=6 ALLOW FILTERING"
-df = pd.DataFrame(list(app.session.execute(cql)))
-df['createdat'] = pd.to_datetime(df['createdat'].mul(1000000))
-df = df.set_index(['createdat', 'tweetid'], drop=False)
-df = df.dropna(subset=['geolocationlatitude'])        
-df = df.dropna(subset=['geolocationlongitude'])
-df = df[df['geolocationlatitude'].between(35, 60)]
-df = df[df['geolocationlongitude'].between(-20, 30)]
-df['city'] = "Hamburg"
-df.sort_index(inplace=True)
-
-index = df.index.get_level_values(0).drop_duplicates()
-data = pd.DataFrame(index=index)
-series = data.sort_index().asfreq(freq='D')
-
-days = list(set(series.index.astype(int)))
-days.sort()
+df = None
+days = None
 
 #  Layouts
 layout_table = dict(
@@ -106,141 +92,139 @@ layout_lines = dict(
     
 )
 
-layout = html.Div(
-    html.Div([
-        html.Div(id='page-1-content'),
-        dcc.Link('Raw data | ', href='/'),
-        dcc.Link('Statistics | ', href='/statistics'),
-        dcc.Link('Indicators |', href='/indicators'),
-        dcc.Link('Twitter', href='/twitter'),
-        html.Div(
-            [
-                html.H1(children='SmartSquare - Twitter Raw Data',
-                        style={
-                            'textAlign': 'center'
-                        },
-                        className='twelve columns')
-                
-            ], className="row"
-        ),    
-        # Selectors        
+def layout():
+    return html.Div(
         html.Div([
-				dcc.RangeSlider(
-					id='a-slider',
-					min=days[0],
-					max=days[-1],
-                    step= 24 * 60 * 60 * 1000000000,
-                    updatemode='mouseup', #'drag' 
-                    pushable=True,
-					value=[days[0], days[-1]],# int(max(timestamps) - min(timestamps))
-					marks={day: datetime.fromtimestamp(day/1000000000) for day in days},
-				),
-			], className='twelve columns'),
-        html.Br(),
-        html.Br(),
-        html.Div([
-				dcc.Slider(
-					id='a-slider2',
-					min=days[0],
-					max=days[-1],
-					value=days[0],
-					marks={hour: str(i) + 'days' for i, hour in enumerate(days)},
-                    step= 60 * 60 * 1000000000,
-                    disabled=False,
-                    updatemode='drag', #'drag'
-				),
-			], className='twelve columns'),
-        html.Br(),
-        html.Br(),
-        html.Br(),
-        # Map + table + Histogram
-        html.Div(
-            [
-                html.Div([
-                    dcc.Graph(
-                        id='a-bar-graph',
-                    )
-                ], className= 'three columns'
-                ),
-                html.Div(
-                    [
-                        dcc.Graph(id='t-map-graph',
-                                  animate=True)
-                    ], className = "six columns"
-                ),
-                html.Div([
-                    dcc.Graph(
-                        id='a-bar-graph2',
-                    )
-                ], className= 'three columns'
-                ),
-                html.Div([
-                    dcc.Graph(
-                        id="a-line-graph")]
-                    , className="twelve columns"
-                ), 
-                html.Div(
-                    [
-                        dt.DataTable(
-                            id='a-datatable',
-                            columns=[{"name": i, "id": i} for i in df.columns],
-                            data=df.to_dict(orient='records'),
-                            selected_rows=[],#list(df['index'].astype(int)) ,#[],
-                            editable=False,
-                            filtering=False,
-                            sorting=True,
-                            row_selectable="multi",
-                            sorting_type="multi",
-                            style_cell={'padding': '5px'},
-                            style_table={
-                                
-                                'maxHeight': '700px',
-                                'border': 'thin lightgrey solid',
-                                'margin-top': 0
+            html.Div(id='page-twitter-content'),
+            Header(),
+            html.Div(
+                [
+                    html.H2(children='Twitter',
+                            style={
+                                'textAlign': 'center'
                             },
-                            style_header={
-                                'backgroundColor': 'white',
-                                'fontWeight': 'bold'
-                            },
-                            style_cell_conditional=[
-                                {
-                                    'if': {'column_id': c},
-                                    'textAlign': 'left'
-                                } for c in ['cam', 'time','track_id','track_class']
-                            ] + [
-                                                        {
-                                    'if': {'row_index': 'odd'},
-                                    'backgroundColor': 'rgb(248, 248, 248)'
-                                }
-                            ] + [
-                                {
-                                    'if': {'column_id': c},
-                                    'textAlign': 'left'
-                                } for c in ['Date', 'Region']
-                            ],
-                        
-                            style_as_list_view=True,
-                            pagination_mode='fe',
-                                pagination_settings={
-                                    "displayed_pages": 1,
-                                    "current_page": 0,
-                                    "page_size": 18,
+                            className='twelve columns')
+                    
+                ], className="row"
+            ),    
+            # Selectors        
+            html.Div([
+    				dcc.RangeSlider(
+    					id='a-slider',
+    					min=days[0],
+    					max=days[-1],
+                        step= 24 * 60 * 60 * 1000000000,
+                        updatemode='mouseup', #'drag' 
+                        pushable=True,
+    					value=[days[0], days[-1]],# int(max(timestamps) - min(timestamps))
+    					marks={day: datetime.fromtimestamp(day/1000000000) for day in days},
+    				),
+    			], className='twelve columns'),
+            html.Br(),
+            html.Br(),
+            html.Div([
+    				dcc.Slider(
+    					id='a-slider2',
+    					min=days[0],
+    					max=days[-1],
+    					value=days[0],
+    					marks={hour: str(i) + 'days' for i, hour in enumerate(days)},
+                        step= 60 * 60 * 1000000000,
+                        disabled=False,
+                        updatemode='drag', #'drag'
+    				),
+    			], className='twelve columns'),
+            html.Br(),
+            html.Br(),
+            html.Br(),
+            # Map + table + Histogram
+            html.Div(
+                [
+                    html.Div([
+                        dcc.Graph(
+                            id='a-bar-graph',
+                        )
+                    ], className= 'three columns'
+                    ),
+                    html.Div(
+                        [
+                            dcc.Graph(id='t-map-graph',
+                                      animate=True)
+                        ], className = "six columns"
+                    ),
+                    html.Div([
+                        dcc.Graph(
+                            id='a-bar-graph2',
+                        )
+                    ], className= 'three columns'
+                    ),
+                    html.Div([
+                        dcc.Graph(
+                            id="a-line-graph")]
+                        , className="twelve columns"
+                    ), 
+                    html.Div(
+                        [
+                            dt.DataTable(
+                                id='a-datatable',
+                                columns=[{"name": i, "id": i} for i in df.columns],
+                                data=df.to_dict(orient='records'),
+                                selected_rows=[],#list(df['index'].astype(int)) ,#[],
+                                editable=False,
+                                filtering=False,
+                                sorting=True,
+                                row_selectable="multi",
+                                sorting_type="multi",
+                                style_cell={'padding': '5px'},
+                                style_table={
+                                    
+                                    'maxHeight': '700px',
+                                    'border': 'thin lightgrey solid',
+                                    'margin-top': 0
                                 },
-                                navigation="page",
-                            ),
-                    ],
-                    className="twelve columns"
-                ),                
-                html.Div(
-                    [
-                        html.P('Developed by Marc-André Vollstedt - ', style = {'display': 'inline'}),
-                        html.A('marc.vollstedt@gmail.com', href = 'mailto:marc.vollstedt@gmail.com')
-                    ], className = "twelve columns",
-                       style = {'fontSize': 18, 'padding-top': 20}
-                )
-            ], className="row"
-        )
-   ], className='ten columns offset-by-one'))
+                                style_header={
+                                    'backgroundColor': 'white',
+                                    'fontWeight': 'bold'
+                                },
+                                style_cell_conditional=[
+                                    {
+                                        'if': {'column_id': c},
+                                        'textAlign': 'left'
+                                    } for c in ['cam', 'time','track_id','track_class']
+                                ] + [
+                                                            {
+                                        'if': {'row_index': 'odd'},
+                                        'backgroundColor': 'rgb(248, 248, 248)'
+                                    }
+                                ] + [
+                                    {
+                                        'if': {'column_id': c},
+                                        'textAlign': 'left'
+                                    } for c in ['Date', 'Region']
+                                ],
+                            
+                                style_as_list_view=True,
+                                pagination_mode='fe',
+                                    pagination_settings={
+                                        "displayed_pages": 1,
+                                        "current_page": 0,
+                                        "page_size": 18,
+                                    },
+                                    navigation="page",
+                                ),
+                        ],
+                        className="twelve columns"
+                    ),                
+                    html.Div(
+                        [
+                            html.P('Developed by Marc-André Vollstedt - ', style = {'display': 'inline'}),
+                            html.A('marc.vollstedt@gmail.com', href = 'mailto:marc.vollstedt@gmail.com')
+                        ], className = "twelve columns",
+                           style = {'fontSize': 18, 'padding-top': 20}
+                    )
+                ], className="row"
+            )
+       ], className='ten columns offset-by-one'))
                 
 @app.callback(
 Output('a-datatable', 'data'),

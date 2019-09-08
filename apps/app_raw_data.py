@@ -8,6 +8,7 @@ import geopandas as gpd
 import pandas as pd
 from plotly import graph_objs as go
 
+from components import Header, Footer
 from app import app
 
 
@@ -25,25 +26,8 @@ classes = ['', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
             'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase',
             'scissors', 'teddy bear', 'hair drier', 'toothbrush']
 
-
-sql = "SELECT cam, day, slice, part, subpart, track_id, time, track_class, geom FROM tracks_points_sec"
-df = gpd.GeoDataFrame.from_postgis(sql, app.connection, geom_col='geom' )
-#df.crs = {'init': 'epsg:4326'}
-df = df.to_crs('epsg:4326')
-df['lon'] = df['geom'].y
-df['lat'] = df['geom'].x
-df['track_class_name'] = [classes[classs] for classs in df['track_class'].astype(int)]
-del df['geom']
-#df['time'] = pd.to_datetime(df['time'])
-df['index'] = df.index
-df['minute'] = df['time'].dt.strftime('%Y-%m-%d %H:%M:00')
-df.sort_values(['time','index'])
-#df.set_index(['time', 'index'], inplace=True)
-#df.sort_index(inplace=True)
-
-#Slider
-seconds = list(set(df['time'].astype(int)))
-seconds.sort()
+df = None
+seconds = None
 
 #  Layouts
 layout_table = dict(
@@ -133,221 +117,219 @@ layout_lines2 = dict(
     
 )
 
-layout = html.Div(
-    html.Div([
-        html.Div(id='page-1-content'),
-        dcc.Link('Raw data | ', href='/'),
-        dcc.Link('Statistics | ', href='/statistics'),
-        dcc.Link('Indicators |', href='/indicators'),
-        dcc.Link('Twitter', href='/twitter'),
-        html.Div(
-            [
-                html.H1(children='SmartSquare - Movement Raw Data',
-                        style={
-                            'textAlign': 'center'
-                        },
-                        className='twelve columns')
-                
-            ], className="row"
-        ),    
-        # Selectors
-        html.Div(
-            [
-                html.Div(
-                    [
-                        dcc.Dropdown(
-                                id = 'cam',
-                                options=[
-                                    {'label': 'DesignOffices', 'value': 'designOffices'},
-                                    {'label': 'Kirchvorplatz', 'value': 'kirchvorplatz'},
-                                    {'label': 'KreuzungDomplatz', 'value': 'kreuzungDomplatz'},
-                                    {'label': 'Backhus', 'value': 'backhus'}
-                                ],
-                                value=['designOffices', 'kirchvorplatz', 'kreuzungDomplatz'],
-                                multi=True
-                        ),
-                    ],
-                    className='six columns'
-                ),                
-            ],
-        ),
-        
-        # Selectors
-        html.Div(
-            [                
-                html.Div(
-                    [
-                        dcc.Dropdown(
-                            id='track_class',
-                            options= [{'label': classes[int(item)],'value': int(item)}
-                                        for item in set(df['track_class'].astype(int))],
-                            multi=True,
-                            value=[1,2,3,4,6,8]#list(set(df['track_class'].astype(int)))
-                        )
-                    ],
-                    className='six columns',
-                )
-            ],
-            className='row'
-        ),
-        # Selectors
-        html.Div(
-            [                
-                html.Div(
-                    [
-                        dcc.Dropdown(
-                            id='day',
-                            options= [{'label': item,'value': item}
-                                        for item in set(df['day'])],
-                            multi=True,
-                            value=list(set(df['day']))
-                        )
-                    ],
-                    className='six columns',
-                )
-            ],
-        ),
-        # Selectors
-        html.Div(
-            [                
-                html.Div(
-                    [
-                        dcc.Dropdown(
-                            id='slice',
-                            options= [{'label': item,'value': item}
-                                        for item in set(df['slice'])],
-                            multi=True,
-                            value=list(set(df['slice']))
-                        )
-                    ],
-                    className='six columns',
-                )
-            ],
-            className='row'
-        ),
-        html.Br(),
+def layout(): 
+    return html.Div(
         html.Div([
-				dcc.RangeSlider(
-					id='slider',
-					min=min(seconds),
-					max=max(seconds),
-                    step=1000000000,
-                    updatemode='mouseup', #'drag' 
-                    pushable=True,
-					value=[min(seconds) , max(seconds)],
-					marks={int(timestamp): datetime.fromtimestamp(timestamp/1000000000) for timestamp in seconds[::60]},
-				),
-			], className='twelve columns'),
-        html.Br(),
-        html.Br(),
-        html.Div([
-				dcc.Slider(
-					id='slider2',
-					min=min(seconds),
-					max=max(seconds),
-					value=min(seconds),
-					marks={int(timestamp): str(i) + 'min' for i, timestamp in enumerate(seconds[::60])},
-                    step=1,
-                    disabled=False,
-                    updatemode='drag', #'drag'
-				),
-			], className='twelve columns'),
-        html.Br(),
-        html.Br(),
-        html.Br(),
-        # Map + table + Histogram
-        html.Div(
-            [
-                html.Div([
-                    dcc.Graph(
-                        id='bar-graph',
-                    )
-                ], className= 'three columns'
-                ),
-                html.Div(
-                    [
-                        dcc.Graph(id='map-graph',
-                                  animate=True)
-                    ], className = "six columns"
-                ),
-                html.Div([
-                    dcc.Graph(
-                        id='bar-graph2',
-                    )
-                ], className= 'three columns'
-                ),
-                html.Div([
-                    dcc.Graph(
-                        id="line-graph")]
-                    , className="twelve columns"
-                ),                
-                html.Div([
-                    dcc.Graph(
-                        id="line-graph2")]
-                    , className="twelve columns"
-                ),
-                html.Div(
-                    [
-                        dt.DataTable(
-                            id='datatable',
-                            columns=[{"name": i, "id": i} for i in df.columns],
-                            data=df.to_dict(orient='records'),
-                            selected_rows=[],#list(df['index'].astype(int)) ,#[],
-                            editable=False,
-                            filtering=False,
-                            sorting=True,
-                            row_selectable="multi",
-                            sorting_type="multi",
-                            style_cell={'padding': '5px'},
-                            style_table={
-                                
-                                'maxHeight': '700px',
-                                'border': 'thin lightgrey solid',
-                                'margin-top': 0
+            html.Div(id='page-motion-content'),
+            Header(),
+            html.Div(
+                [
+                    html.H2(children='Tracks',
+                            style={
+                                'textAlign': 'center'
                             },
-                            style_header={
-                                'backgroundColor': 'white',
-                                'fontWeight': 'bold'
-                            },
-                            style_cell_conditional=[
-                                {
-                                    'if': {'column_id': c},
-                                    'textAlign': 'left'
-                                } for c in ['cam', 'time','track_id','track_class']
-                            ] + [
-                                                        {
-                                    'if': {'row_index': 'odd'},
-                                    'backgroundColor': 'rgb(248, 248, 248)'
-                                }
-                            ] + [
-                                {
-                                    'if': {'column_id': c},
-                                    'textAlign': 'left'
-                                } for c in ['Date', 'Region']
-                            ],
-                        
-                            style_as_list_view=True,
-                            pagination_mode='fe',
-                                pagination_settings={
-                                    "displayed_pages": 1,
-                                    "current_page": 0,
-                                    "page_size": 18,
-                                },
-                                navigation="page",
+                            className='twelve columns')
+                    
+                ], className="row"
+            ),    
+            # Selectors
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            dcc.Dropdown(
+                                    id = 'cam',
+                                    options=[
+                                        {'label': 'DesignOffices', 'value': 'designOffices'},
+                                        {'label': 'Kirchvorplatz', 'value': 'kirchvorplatz'},
+                                        {'label': 'KreuzungDomplatz', 'value': 'kreuzungDomplatz'},
+                                        {'label': 'Backhus', 'value': 'backhus'}
+                                    ],
+                                    value=['designOffices', 'kirchvorplatz', 'kreuzungDomplatz'],
+                                    multi=True
                             ),
-                    ],
-                    className="twelve columns"
-                ),                
-                html.Div(
-                    [
-                        html.P('Developed by Marc-André Vollstedt - ', style = {'display': 'inline'}),
-                        html.A('marc.vollstedt@gmail.com', href = 'mailto:marc.vollstedt@gmail.com')
-                    ], className = "twelve columns",
-                       style = {'fontSize': 18, 'padding-top': 20}
-                )
-            ], className="row"
-        )
-   ], className='ten columns offset-by-one'))
+                        ],
+                        className='six columns'
+                    ),                
+                ],
+            ),
+            
+            # Selectors
+            html.Div(
+                [                
+                    html.Div(
+                        [
+                            dcc.Dropdown(
+                                id='track_class',
+                                options= [{'label': classes[int(item)],'value': int(item)}
+                                            for item in set(df['track_class'].astype(int))],
+                                multi=True,
+                                value=[1,2,3,4,6,8]#list(set(df['track_class'].astype(int)))
+                            )
+                        ],
+                        className='six columns',
+                    )
+                ],
+                className='row'
+            ),
+            # Selectors
+            html.Div(
+                [                
+                    html.Div(
+                        [
+                            dcc.Dropdown(
+                                id='day',
+                                options= [{'label': item,'value': item}
+                                            for item in set(df['day'])],
+                                multi=True,
+                                value=list(set(df['day']))
+                            )
+                        ],
+                        className='six columns',
+                    )
+                ],
+            ),
+            # Selectors
+            html.Div(
+                [                
+                    html.Div(
+                        [
+                            dcc.Dropdown(
+                                id='slice',
+                                options= [{'label': item,'value': item}
+                                            for item in set(df['slice'])],
+                                multi=True,
+                                value=list(set(df['slice']))
+                            )
+                        ],
+                        className='six columns',
+                    )
+                ],
+                className='row'
+            ),
+            html.Br(),
+            html.Div([
+    				dcc.RangeSlider(
+    					id='slider',
+    					min=min(seconds),
+    					max=max(seconds),
+                        step=1000000000,
+                        updatemode='mouseup', #'drag' 
+                        pushable=True,
+    					value=[min(seconds) , max(seconds)],
+    					marks={int(timestamp): datetime.fromtimestamp(timestamp/1000000000) for timestamp in seconds[::60]},
+    				),
+    			], className='twelve columns'),
+            html.Br(),
+            html.Br(),
+            html.Div([
+    				dcc.Slider(
+    					id='slider2',
+    					min=min(seconds),
+    					max=max(seconds),
+    					value=min(seconds),
+    					marks={int(timestamp): str(i) + 'min' for i, timestamp in enumerate(seconds[::60])},
+                        step=1,
+                        disabled=False,
+                        updatemode='drag', #'drag'
+    				),
+    			], className='twelve columns'),
+            html.Br(),
+            html.Br(),
+            html.Br(),
+            # Map + table + Histogram
+            html.Div(
+                [
+                    html.Div([
+                        dcc.Graph(
+                            id='bar-graph',
+                        )
+                    ], className= 'three columns'
+                    ),
+                    html.Div(
+                        [
+                            dcc.Graph(id='map-graph',
+                                      animate=True)
+                        ], className = "six columns"
+                    ),
+                    html.Div([
+                        dcc.Graph(
+                            id='bar-graph2',
+                        )
+                    ], className= 'three columns'
+                    ),
+                    html.Div([
+                        dcc.Graph(
+                            id="line-graph")]
+                        , className="twelve columns"
+                    ),                
+                    html.Div([
+                        dcc.Graph(
+                            id="line-graph2")]
+                        , className="twelve columns"
+                    ),
+                    html.Div(
+                        [
+                            dt.DataTable(
+                                id='datatable',
+                                columns=[{"name": i, "id": i} for i in df.columns],
+                                data=df.to_dict(orient='records'),
+                                selected_rows=[],#list(df['index'].astype(int)) ,#[],
+                                editable=False,
+                                filtering=False,
+                                sorting=True,
+                                row_selectable="multi",
+                                sorting_type="multi",
+                                style_cell={'padding': '5px'},
+                                style_table={
+                                    
+                                    'maxHeight': '700px',
+                                    'border': 'thin lightgrey solid',
+                                    'margin-top': 0
+                                },
+                                style_header={
+                                    'backgroundColor': 'white',
+                                    'fontWeight': 'bold'
+                                },
+                                style_cell_conditional=[
+                                    {
+                                        'if': {'column_id': c},
+                                        'textAlign': 'left'
+                                    } for c in ['cam', 'time','track_id','track_class']
+                                ] + [
+                                                            {
+                                        'if': {'row_index': 'odd'},
+                                        'backgroundColor': 'rgb(248, 248, 248)'
+                                    }
+                                ] + [
+                                    {
+                                        'if': {'column_id': c},
+                                        'textAlign': 'left'
+                                    } for c in ['Date', 'Region']
+                                ],
+                            
+                                style_as_list_view=True,
+                                pagination_mode='fe',
+                                    pagination_settings={
+                                        "displayed_pages": 1,
+                                        "current_page": 0,
+                                        "page_size": 18,
+                                    },
+                                    navigation="page",
+                                ),
+                        ],
+                        className="twelve columns"
+                    ),                
+                    html.Div(
+                        [
+                            html.P('Developed by Marc-André Vollstedt - ', style = {'display': 'inline'}),
+                            html.A('marc.vollstedt@gmail.com', href = 'mailto:marc.vollstedt@gmail.com')
+                        ], className = "twelve columns",
+                           style = {'fontSize': 18, 'padding-top': 20}
+                    )
+                ], className="row"
+            )
+       ], className='ten columns offset-by-one'))
 
 @app.callback(
 Output('datatable', 'data'),
