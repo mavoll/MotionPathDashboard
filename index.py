@@ -3,6 +3,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import pandas as pd
 import geopandas as gpd
+import datetime
 
 from app import app
 from apps import app_raw_data
@@ -13,12 +14,13 @@ from apps import app_pyramics
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content'),
-#    dcc.Interval(
-#        id='interval-component',
-#        interval=60*60*1000, # in milliseconds
-#        n_intervals=0
-#    )
+    html.Div(id='dummy'),
+    dcc.Interval(
+        id='interval-component',
+        interval=60*60*1000, # in milliseconds
+        n_intervals=0
+    ),
+    html.Div(id='page-content')
 ])
 
 @app.callback(Output('page-content', 'children'),
@@ -51,6 +53,19 @@ def display_page(pathname):
     
     else:
         return '404'
+
+@app.callback(Output('dummy', 'children'),
+              [Input('interval-component', 'n_intervals')])
+def update_dataframes(n):
+    
+    now = datetime.datetime.now()
+    if n > 0 and now - app.last_update_time >= datetime.timedelta(hours=1):
+        fetch_and_prepare_tracks_data()
+        fetch_and_prepare_twitter_data()
+        fetch_and_prepare_weather_data()        
+        fetch_and_prepare_pyramics_data()
+        app.last_update_time = now
+        print("Updated at: " + now.strftime("%m/%d/%Y, %H:%M:%S"))        
 
 def fetch_and_prepare_pyramics_data():
     

@@ -2,6 +2,7 @@ import dash
 import psycopg2
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
+import datetime
 
 app = dash.Dash(__name__)
 server = app.server
@@ -22,4 +23,5 @@ app.session = app.cluster.connect('master_dataset')
 
 # Boostrap CSS.
 app.css.append_css({'external_url': 'https://codepen.io/amyoshino/pen/jzXypZ.css'})
+app.last_update_time = datetime.datetime.now()
 
