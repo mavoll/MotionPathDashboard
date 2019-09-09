@@ -5,7 +5,6 @@ import dash_html_components as html
 from datetime import datetime
 import colorsys
 import geopandas as gpd
-import pandas as pd
 from plotly import graph_objs as go
 
 from components import Header, Footer
@@ -215,13 +214,7 @@ def layout():
                         ],
                         className="twelve columns"
                     ),                
-                    html.Div(
-                        [
-                            html.P('Developed by Marc-André Vollstedt - ', style = {'display': 'inline'}),
-                            html.A('marc.vollstedt@gmail.com', href = 'mailto:marc.vollstedt@gmail.com')
-                        ], className = "twelve columns",
-                           style = {'fontSize': 18, 'padding-top': 20}
-                    )
+                    Footer(),
                 ], className="row"
             )
        ], className='ten columns offset-by-one'))
