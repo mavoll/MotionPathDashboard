@@ -212,11 +212,11 @@ def layout():
     					id='slider',
     					min=min(seconds),
     					max=max(seconds),
-                        step=1000000000,
+                        step=1000000000 * 60,
                         updatemode='mouseup', #'drag' 
                         pushable=True,
     					value=[min(seconds) , max(seconds)],
-    					marks={int(timestamp): datetime.fromtimestamp(timestamp/1000000000) for timestamp in seconds[::60]},
+    					marks={min(seconds): datetime.fromtimestamp(min(seconds)/1000000000).strftime("%Y-%m-%d %H:%M") , max(seconds): datetime.fromtimestamp(max(seconds)/1000000000).strftime("%Y-%m-%d %H:%M")},
     				),
     			], className='twelve columns'),
             html.Br(),

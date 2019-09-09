@@ -25,7 +25,7 @@ def get_menu():
 
         dcc.Link('Tracks   |', href='/', className="tab first"),
 
-        dcc.Link('Twitter   |', href='/twitter', className="tab"),
+ #       dcc.Link('Twitter   |', href='/twitter', className="tab"),
 
         dcc.Link('Pyramics   |', href='/pyramics', className="tab"),
 

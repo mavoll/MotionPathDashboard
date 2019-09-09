@@ -3,6 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from datetime import datetime
 import colorsys
+import pandas as pd
 from plotly import graph_objs as go
 
 from components import Header, Footer
@@ -86,7 +87,7 @@ def layout():
                         updatemode='mouseup', #'drag' 
                         pushable=True,
     					value=[min(days) , max(days)],
-    					marks={int(timestamp): datetime.fromtimestamp(timestamp/1000000000) for timestamp in days[::30]},
+    					marks={int(datetime.timestamp(date)) * 1000000000: date.strftime("%Y-%m-%d") for date in pd.date_range(min(days), max(days)).tolist()[::30]},
     				),
     			], className='twelve columns'),       
             html.Br(),

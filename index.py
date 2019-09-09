@@ -33,11 +33,11 @@ def display_page(pathname):
             
         return app_raw_data.layout()
     
-    if pathname == '/twitter':        
-        if app_twitter.df is None:
-            fetch_and_prepare_twitter_data()
-            
-        return app_twitter.layout()
+#    if pathname == '/twitter':        
+#        if app_twitter.df is None:
+#            fetch_and_prepare_twitter_data()
+#            
+#        return app_twitter.layout()
     
     if pathname == '/weather':
         if app_weather.df is None:       
