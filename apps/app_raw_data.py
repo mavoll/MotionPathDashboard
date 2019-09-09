@@ -268,58 +268,58 @@ def layout():
                             id="line-graph2")]
                         , className="twelve columns"
                     ),
-                    html.Div(
-                        [
-                            dt.DataTable(
-                                id='datatable',
-                                columns=[{"name": i, "id": i} for i in df.columns],
-                                data=df.to_dict(orient='records'),
-                                selected_rows=[],#list(df['index'].astype(int)) ,#[],
-                                editable=False,
-                                filtering=False,
-                                sorting=True,
-                                row_selectable="multi",
-                                sorting_type="multi",
-                                style_cell={'padding': '5px'},
-                                style_table={
-                                    
-                                    'maxHeight': '700px',
-                                    'border': 'thin lightgrey solid',
-                                    'margin-top': 0
-                                },
-                                style_header={
-                                    'backgroundColor': 'white',
-                                    'fontWeight': 'bold'
-                                },
-                                style_cell_conditional=[
-                                    {
-                                        'if': {'column_id': c},
-                                        'textAlign': 'left'
-                                    } for c in ['cam', 'time','track_id','track_class']
-                                ] + [
-                                                            {
-                                        'if': {'row_index': 'odd'},
-                                        'backgroundColor': 'rgb(248, 248, 248)'
-                                    }
-                                ] + [
-                                    {
-                                        'if': {'column_id': c},
-                                        'textAlign': 'left'
-                                    } for c in ['Date', 'Region']
-                                ],
-                            
-                                style_as_list_view=True,
-                                pagination_mode='fe',
-                                    pagination_settings={
-                                        "displayed_pages": 1,
-                                        "current_page": 0,
-                                        "page_size": 18,
-                                    },
-                                    navigation="page",
-                                ),
-                        ],
-                        className="twelve columns"
-                    ),                
+#                    html.Div(
+#                        [
+#                            dt.DataTable(
+#                                id='datatable',
+#                                columns=[{"name": i, "id": i} for i in df.columns],
+#                                data=df.to_dict(orient='records'),
+#                                selected_rows=[],#list(df['index'].astype(int)) ,#[],
+#                                editable=False,
+#                                filtering=False,
+#                                sorting=True,
+#                                row_selectable="multi",
+#                                sorting_type="multi",
+#                                style_cell={'padding': '5px'},
+#                                style_table={
+#                                    
+#                                    'maxHeight': '700px',
+#                                    'border': 'thin lightgrey solid',
+#                                    'margin-top': 0
+#                                },
+#                                style_header={
+#                                    'backgroundColor': 'white',
+#                                    'fontWeight': 'bold'
+#                                },
+#                                style_cell_conditional=[
+#                                    {
+#                                        'if': {'column_id': c},
+#                                        'textAlign': 'left'
+#                                    } for c in ['cam', 'time','track_id','track_class']
+#                                ] + [
+#                                                            {
+#                                        'if': {'row_index': 'odd'},
+#                                        'backgroundColor': 'rgb(248, 248, 248)'
+#                                    }
+#                                ] + [
+#                                    {
+#                                        'if': {'column_id': c},
+#                                        'textAlign': 'left'
+#                                    } for c in ['Date', 'Region']
+#                                ],
+#                            
+#                                style_as_list_view=True,
+#                                pagination_mode='fe',
+#                                    pagination_settings={
+#                                        "displayed_pages": 1,
+#                                        "current_page": 0,
+#                                        "page_size": 18,
+#                                    },
+#                                    navigation="page",
+#                                ),
+#                        ],
+#                        className="twelve columns"
+#                    ),                
                     html.Div(
                         [
                             html.P('Developed by Marc-André Vollstedt - ', style = {'display': 'inline'}),
@@ -331,21 +331,43 @@ def layout():
             )
        ], className='ten columns offset-by-one'))
 
+#@app.callback(
+#Output('datatable', 'data'),
+#[Input('track_class', 'value'),
+# Input('cam', 'value'),
+# Input('day', 'value'),
+# Input('slice', 'value'),
+# Input('slider', 'value'),
+# Input('datatable', 'selected_rows')])
+#def update_dataframe(track_class, cam, day, slice, slider, selected_rows):
+#                    
+#    tmp = df.copy()
+#    
+#    if len(selected_rows) > 0:
+#        tmp = tmp[tmp['index'].astype(int).isin(selected_rows)]
+#            
+#    tmp = tmp[tmp['time'].astype(int) >= slider[0]]
+#    tmp = tmp[tmp['time'].astype(int) <= slider[1]]
+#                
+#    tmp = tmp[tmp['day'].isin(day)]    
+#    tmp = tmp[tmp['cam'].isin(cam)] 
+#    tmp = tmp[tmp['slice'].isin(slice)]
+#    tmp = tmp[tmp['track_class'].astype(int).isin(track_class)] 
+#    
+#    return tmp.to_dict(orient='records')
+
+    
 @app.callback(
-Output('datatable', 'data'),
+Output('map-graph', 'figure'),
 [Input('track_class', 'value'),
  Input('cam', 'value'),
  Input('day', 'value'),
  Input('slice', 'value'),
  Input('slider', 'value'),
- Input('slider2', 'value'),
- Input('datatable', 'selected_rows')])
-def update_dataframe(track_class, cam, day, slice, slider, slider2, selected_rows):
-                    
-    tmp = df.copy()
+ Input('slider2', 'value')])
+def update_map(track_class, cam, day, slice, slider, slider2):
     
-    if len(selected_rows) > 0:
-        tmp = tmp[tmp['index'].astype(int).isin(selected_rows)]
+    tmp = df.copy()
         
     if min(tmp['time'].astype(int)) < int(slider2 / 1000000000) * 1000000000:
         tmp = tmp[tmp['time'].astype(int) == int(slider2 / 1000000000) * 1000000000]
@@ -358,29 +380,20 @@ def update_dataframe(track_class, cam, day, slice, slider, slider2, selected_row
     tmp = tmp[tmp['slice'].isin(slice)]
     tmp = tmp[tmp['track_class'].astype(int).isin(track_class)] 
     
-    return tmp.to_dict(orient='records')
-
-    
-@app.callback(
-Output('map-graph', 'figure'),
-[Input('datatable', 'data')])
-def update_map(data):
-    
-    aux = gpd.GeoDataFrame(data)
     data = []
     
-    if not aux.empty:
+    if not tmp.empty:
         
-        for class_s in list(set(aux['track_class_name'])):
-            tmp = aux[aux['track_class_name'] == class_s]
+        for class_s in list(set(tmp['track_class_name'])):
+            tmp2 = tmp[tmp['track_class_name'] == class_s]
             data.append(
                         dict(
                                 type= 'scattermapbox',
-                                lat= list(tmp['lat']),
-                                lon= list(tmp['lon']),
+                                lat= list(tmp2['lat']),
+                                lon= list(tmp2['lon']),
                                 hoverinfo= "text",
                                 hovertext= [["Track ID: {} <br>Track class: {} <br>Time: {}".format(i,j,k)]
-                                                for i,j,k in zip(tmp['track_id'], tmp['track_class_name'],tmp['time'])],
+                                                for i,j,k in zip(tmp2['track_id'], tmp2['track_class_name'],tmp2['time'])],
                                 mode= "markers",
                                 name= class_s,
                                 marker= dict(
@@ -396,15 +409,29 @@ def update_map(data):
 
 @app.callback(
 Output('bar-graph', 'figure'),
-[Input('datatable', 'data')])
-def update_bar_graph(data):
+[Input('track_class', 'value'),
+ Input('cam', 'value'),
+ Input('day', 'value'),
+ Input('slice', 'value'),
+ Input('slider', 'value')])
+def update_bar_graph(track_class, cam, day, slice, slider):
     
-    dff = gpd.GeoDataFrame(data)    
+    tmp = df.copy()
+    
+            
+    tmp = tmp[tmp['time'].astype(int) >= slider[0]]
+    tmp = tmp[tmp['time'].astype(int) <= slider[1]]
+                
+    tmp = tmp[tmp['day'].isin(day)]    
+    tmp = tmp[tmp['cam'].isin(cam)] 
+    tmp = tmp[tmp['slice'].isin(slice)]
+    tmp = tmp[tmp['track_class'].astype(int).isin(track_class)] 
+    
     data = []
     
-    if not dff.empty:
-        grouped = dff.groupby('cam', as_index = False).count()
-        grouped2 = dff.groupby('slice', as_index = False).count()
+    if not tmp.empty:
+        grouped = tmp.groupby('cam', as_index = False).count()
+        grouped2 = tmp.groupby('slice', as_index = False).count()
         
         data = [
              dict(
@@ -433,16 +460,29 @@ def update_bar_graph(data):
     
 @app.callback(
 Output('bar-graph2', 'figure'),
-[Input('datatable', 'data')])
-def update_bar_graph2(data):
+[Input('track_class', 'value'),
+ Input('cam', 'value'),
+ Input('day', 'value'),
+ Input('slice', 'value'),
+ Input('slider', 'value')])
+def update_bar_graph2(track_class, cam, day, slice, slider):
     
-    dff = gpd.GeoDataFrame(data)    
-    data=[]
+    tmp = df.copy()
+                
+    tmp = tmp[tmp['time'].astype(int) >= slider[0]]
+    tmp = tmp[tmp['time'].astype(int) <= slider[1]]
+                
+    tmp = tmp[tmp['day'].isin(day)]    
+    tmp = tmp[tmp['cam'].isin(cam)] 
+    tmp = tmp[tmp['slice'].isin(slice)]
+    tmp = tmp[tmp['track_class'].astype(int).isin(track_class)] 
     
-    if not dff.empty:
+    data = []
+    
+    if not tmp.empty:
         
-        grouped = dff.groupby('track_class_name', as_index = False).count()
-        grouped2 = dff.groupby('day', as_index = False).count()
+        grouped = tmp.groupby('track_class_name', as_index = False).count()
+        grouped2 = tmp.groupby('day', as_index = False).count()
         data = [             
              dict(
                  type='pie',
@@ -473,15 +513,27 @@ def update_bar_graph2(data):
     
 @app.callback(
 Output('line-graph', 'figure'),
-[Input('datatable', 'data')])
-def update_line_graph(data):
+[Input('track_class', 'value'),
+ Input('cam', 'value'),
+ Input('day', 'value'),
+ Input('slice', 'value'),
+ Input('slider', 'value')])
+def update_line_graph(track_class, cam, day, slice, slider):
     
-    dff = gpd.GeoDataFrame(data)  
-    data=[]
+    tmp = df.copy()
+                
+    tmp = tmp[tmp['time'].astype(int) >= slider[0]]
+    tmp = tmp[tmp['time'].astype(int) <= slider[1]]
+                
+    tmp = tmp[tmp['day'].isin(day)]    
+    tmp = tmp[tmp['cam'].isin(cam)] 
+    tmp = tmp[tmp['slice'].isin(slice)]
+    tmp = tmp[tmp['track_class'].astype(int).isin(track_class)] 
     
+    data = []    
     
-    if not dff.empty:
-        grouped = dff.groupby(['track_class_name'], as_index = False)
+    if not tmp.empty:
+        grouped = tmp.groupby(['track_class_name'], as_index = False)
         for name, group in grouped:
            group = group.sort_values(['time'])    
            if not group.empty:
@@ -504,15 +556,27 @@ def update_line_graph(data):
 
 @app.callback(
 Output('line-graph2', 'figure'),
-[Input('datatable', 'data')])
-def update_line_graph2(data):
+[Input('track_class', 'value'),
+ Input('cam', 'value'),
+ Input('day', 'value'),
+ Input('slice', 'value'),
+ Input('slider', 'value')])
+def update_line_graph2(track_class, cam, day, slice, slider):
     
-    dff = gpd.GeoDataFrame(data)  
-    data=[]
+    tmp = df.copy()
+                    
+    tmp = tmp[tmp['time'].astype(int) >= slider[0]]
+    tmp = tmp[tmp['time'].astype(int) <= slider[1]]
+                
+    tmp = tmp[tmp['day'].isin(day)]    
+    tmp = tmp[tmp['cam'].isin(cam)] 
+    tmp = tmp[tmp['slice'].isin(slice)]
+    tmp = tmp[tmp['track_class'].astype(int).isin(track_class)] 
     
+    data = []    
     
-    if not dff.empty:
-        grouped = dff.groupby(['track_class_name'], as_index = False)
+    if not tmp.empty:
+        grouped = tmp.groupby(['track_class_name'], as_index = False)
         for name, group in grouped:
            group = group.sort_values(['minute'])    
            group

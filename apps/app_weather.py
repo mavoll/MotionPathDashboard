@@ -159,96 +159,96 @@ def layout():
                             id="weather-hourly-line-graph")]
                         , className="twelve columns"
                     ),
-                    html.Div(
-                        [
-                            html.H5(children='Weather daily data table:',
-                                    style={
-                                        'textAlign': 'center'
-                                    },
-                                    className='twelve columns')
-                            
-                        ], className="row"
-                    ),
-                    html.Div(
-                        [
-                            dt.DataTable(
-                                id='weather-daily-datatable',
-                                columns=[{"name": i, "id": i} for i in df.columns],
-                                data=df.to_dict(orient='records'),
-                                selected_rows=[],#list(df['index'].astype(int)) ,#[],
-                                editable=False,
-                                filtering=False,
-                                sorting=True,
-                                row_selectable="multi",
-                                sorting_type="multi",
-                                style_cell={'padding': '5px'},
-                                style_table={
-                                    
-                                    'maxHeight': '700px',
-                                    'border': 'thin lightgrey solid',
-                                    'margin-top': 0
-                                },
-                                style_header={
-                                    'backgroundColor': 'white',
-                                    'fontWeight': 'bold'
-                                },    
-                                style_as_list_view=True,
-                                pagination_mode='fe',
-                                    pagination_settings={
-                                        "displayed_pages": 1,
-                                        "current_page": 0,
-                                        "page_size": 18,
-                                    },
-                                    navigation="page",
-                                ),
-                        ],
-                        className="twelve columns"
-                    ),
-                    html.Div(
-                        [
-                            html.H5(children='Weather hourly data table:',
-                                    style={
-                                        'textAlign': 'center'
-                                    },
-                                    className='twelve columns')
-                            
-                        ], className="row"
-                    ),
-                    html.Div(
-                        [
-                            dt.DataTable(
-                                id='weather-hourly-datatable',
-                                columns=[{"name": i, "id": i} for i in df2.columns],
-                                data=df.to_dict(orient='records'),
-                                selected_rows=[],#list(df['index'].astype(int)) ,#[],
-                                editable=False,
-                                filtering=False,
-                                sorting=True,
-                                row_selectable="multi",
-                                sorting_type="multi",
-                                style_cell={'padding': '5px'},
-                                style_table={
-                                    
-                                    'maxHeight': '700px',
-                                    'border': 'thin lightgrey solid',
-                                    'margin-top': 0
-                                },
-                                style_header={
-                                    'backgroundColor': 'white',
-                                    'fontWeight': 'bold'
-                                },    
-                                style_as_list_view=True,
-                                pagination_mode='fe',
-                                    pagination_settings={
-                                        "displayed_pages": 1,
-                                        "current_page": 0,
-                                        "page_size": 18,
-                                    },
-                                    navigation="page",
-                                ),
-                        ],
-                        className="twelve columns"
-                    ),                
+#                    html.Div(
+#                        [
+#                            html.H5(children='Weather daily data table:',
+#                                    style={
+#                                        'textAlign': 'center'
+#                                    },
+#                                    className='twelve columns')
+#                            
+#                        ], className="row"
+#                    ),
+#                    html.Div(
+#                        [
+#                            dt.DataTable(
+#                                id='weather-daily-datatable',
+#                                columns=[{"name": i, "id": i} for i in df.columns],
+#                                data=df.to_dict(orient='records'),
+#                                selected_rows=[],#list(df['index'].astype(int)) ,#[],
+#                                editable=False,
+#                                filtering=False,
+#                                sorting=True,
+#                                row_selectable="multi",
+#                                sorting_type="multi",
+#                                style_cell={'padding': '5px'},
+#                                style_table={
+#                                    
+#                                    'maxHeight': '700px',
+#                                    'border': 'thin lightgrey solid',
+#                                    'margin-top': 0
+#                                },
+#                                style_header={
+#                                    'backgroundColor': 'white',
+#                                    'fontWeight': 'bold'
+#                                },    
+#                                style_as_list_view=True,
+#                                pagination_mode='fe',
+#                                    pagination_settings={
+#                                        "displayed_pages": 1,
+#                                        "current_page": 0,
+#                                        "page_size": 18,
+#                                    },
+#                                    navigation="page",
+#                                ),
+#                        ],
+#                        className="twelve columns"
+#                    ),
+#                    html.Div(
+#                        [
+#                            html.H5(children='Weather hourly data table:',
+#                                    style={
+#                                        'textAlign': 'center'
+#                                    },
+#                                    className='twelve columns')
+#                            
+#                        ], className="row"
+#                    ),
+#                    html.Div(
+#                        [
+#                            dt.DataTable(
+#                                id='weather-hourly-datatable',
+#                                columns=[{"name": i, "id": i} for i in df2.columns],
+#                                data=df.to_dict(orient='records'),
+#                                selected_rows=[],#list(df['index'].astype(int)) ,#[],
+#                                editable=False,
+#                                filtering=False,
+#                                sorting=True,
+#                                row_selectable="multi",
+#                                sorting_type="multi",
+#                                style_cell={'padding': '5px'},
+#                                style_table={
+#                                    
+#                                    'maxHeight': '700px',
+#                                    'border': 'thin lightgrey solid',
+#                                    'margin-top': 0
+#                                },
+#                                style_header={
+#                                    'backgroundColor': 'white',
+#                                    'fontWeight': 'bold'
+#                                },    
+#                                style_as_list_view=True,
+#                                pagination_mode='fe',
+#                                    pagination_settings={
+#                                        "displayed_pages": 1,
+#                                        "current_page": 0,
+#                                        "page_size": 18,
+#                                    },
+#                                    navigation="page",
+#                                ),
+#                        ],
+#                        className="twelve columns"
+#                    ),                
                     html.Div(
                         [
                             html.P('Developed by Marc-André Vollstedt - ', style = {'display': 'inline'}),
@@ -260,45 +260,49 @@ def layout():
             )
        ], className='ten columns offset-by-one'))
 
-@app.callback(
-Output('weather-daily-datatable', 'data'),
-[Input('slider', 'value'),
- Input('weather-daily-datatable', 'selected_rows')])
-def update_dataframe_daily(slider, selected_rows):
-                    
-    tmp = df.copy()
-    
-    if len(selected_rows) > 0:
-        tmp = tmp[tmp['index'].astype(int).isin(selected_rows)]        
-    
-    tmp = tmp[tmp['date'].astype(int) >= slider[0]]
-    tmp = tmp[tmp['date'].astype(int) <= slider[1]]
-    
-    return tmp.to_dict(orient='records')
+#@app.callback(
+#Output('weather-daily-datatable', 'data'),
+#[Input('slider', 'value'),
+# Input('weather-daily-datatable', 'selected_rows')])
+#def update_dataframe_daily(slider, selected_rows):
+#                    
+#    tmp = df.copy()
+#    
+#    if len(selected_rows) > 0:
+#        tmp = tmp[tmp['index'].astype(int).isin(selected_rows)]        
+#    
+#    tmp = tmp[tmp['date'].astype(int) >= slider[0]]
+#    tmp = tmp[tmp['date'].astype(int) <= slider[1]]
+#    
+#    return tmp.to_dict(orient='records')
 
-@app.callback(
-Output('weather-hourly-datatable', 'data'),
-[Input('slider', 'value'),
- Input('weather-hourly-datatable', 'selected_rows')])
-def update_dataframe_hourly(slider, selected_rows):
-                    
-    tmp = df2.copy()
-    
-    if len(selected_rows) > 0:
-        tmp = tmp[tmp['index'].astype(int).isin(selected_rows)]        
-    
-    tmp = tmp[tmp['time'].astype(int) >= slider[0]]
-    tmp = tmp[tmp['time'].astype(int) <= slider[1]]
-    
-    return tmp.to_dict(orient='records')
+#@app.callback(
+#Output('weather-hourly-datatable', 'data'),
+#[Input('slider', 'value'),
+# Input('weather-hourly-datatable', 'selected_rows')])
+#def update_dataframe_hourly(slider, selected_rows):
+#                    
+#    tmp = df2.copy()
+#    
+#    if len(selected_rows) > 0:
+#        tmp = tmp[tmp['index'].astype(int).isin(selected_rows)]        
+#    
+#    tmp = tmp[tmp['time'].astype(int) >= slider[0]]
+#    tmp = tmp[tmp['time'].astype(int) <= slider[1]]
+#    
+#    return tmp.to_dict(orient='records')
   
 @app.callback(
 Output('weather-daily-line-graph', 'figure'),
-[Input('daily', 'value'),
- Input('weather-daily-datatable', 'data')])
-def update_line_graph_daily(daily, data):
+[Input('slider', 'value'),
+ Input('daily', 'value')])
+def update_line_graph_daily(slider, daily):
     
-    aux = pd.DataFrame(data)
+    aux = df.copy()      
+    
+    aux = aux[aux['date'].astype(int) >= slider[0]]
+    aux = aux[aux['date'].astype(int) <= slider[1]]
+    
     data = []    
          
     if not aux.empty:
@@ -321,11 +325,15 @@ def update_line_graph_daily(daily, data):
 
 @app.callback(
 Output('weather-hourly-line-graph', 'figure'),
-[Input('hourly', 'value'),
- Input('weather-hourly-datatable', 'data')])
-def update_line_graph_hourly(hourly, data):
+[Input('slider', 'value'),
+ Input('hourly', 'value')])
+def update_line_graph_hourly(slider, hourly):
     
-    aux = pd.DataFrame(data)
+    aux = df2.copy()
+    
+    aux = aux[aux['time'].astype(int) >= slider[0]]
+    aux = aux[aux['time'].astype(int) <= slider[1]]
+    
     data = []    
          
     if not aux.empty:
