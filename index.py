@@ -33,11 +33,11 @@ def display_page(pathname):
             
         return app_raw_data.layout()
     
-#    if pathname == '/twitter':        
-#        if app_twitter.df is None:
-#            fetch_and_prepare_twitter_data()
-#            
-#        return app_twitter.layout()
+    if pathname == '/twitter':        
+        if app_twitter.df is None:
+            fetch_and_prepare_twitter_data()
+            
+        return app_twitter.layout()
     
     if pathname == '/weather':
         if app_weather.df is None:       
@@ -91,22 +91,24 @@ def fetch_and_prepare_weather_data():
 
 def fetch_and_prepare_twitter_data():
     
-    cql = "SELECT year, month, day, hour, createdAt, username, tweetId, geolocationlatitude, geolocationlongitude FROM tweets_hamburg_located WHERE year=2018 AND month=6 ALLOW FILTERING"
-    app_twitter.df = pd.DataFrame(list(app.session.execute(cql)))
-    app_twitter.df['createdat'] = pd.to_datetime(app_twitter.df['createdat'].mul(1000000))
-    app_twitter.df = app_twitter.df.set_index(['createdat', 'tweetid'], drop=False)
+    cql = "SELECT year, month, day, hour, createdAt, username, tweetId, text, geolocationlatitude, geolocationlongitude FROM tweets_hamburg_located WHERE geolocationlatitude >= 53.548292 AND geolocationlatitude <= 53.550744 AND geolocationlongitude >= 9.991699 AND geolocationlongitude <= 10.001452 ALLOW FILTERING"
+    app_twitter.df = pd.DataFrame(list(app.session.execute(cql)))    
     app_twitter.df = app_twitter.df.dropna(subset=['geolocationlatitude'])        
     app_twitter.df = app_twitter.df.dropna(subset=['geolocationlongitude'])
-    app_twitter.df = app_twitter.df[app_twitter.df['geolocationlatitude'].between(35, 60)]
-    app_twitter.df = app_twitter.df[app_twitter.df['geolocationlongitude'].between(-20, 30)]
+    #app_twitter.df = app_twitter.df[app_twitter.df['geolocationlatitude'].between(53.549900, 53.551627)]
+    #app_twitter.df = app_twitter.df[app_twitter.df['geolocationlongitude'].between(9.991399, 10.995798)]
+    app_twitter.df['createdat'] = pd.to_datetime(app_twitter.df['createdat'].mul(1000000))
+    #app_twitter.df = app_twitter.df.set_index(['createdat', 'tweetid'], drop=False)
+    app_twitter.df.drop_duplicates(['text'],inplace=True)
     app_twitter.df['city'] = "Hamburg"
-    app_twitter.df.sort_index(inplace=True)
+    #app_twitter.df.sort_index(inplace=True)
         
-    index = app_twitter.df.index.get_level_values(0).drop_duplicates()
-    data = pd.DataFrame(index=index)
-    series = data.sort_index().asfreq(freq='D')
+    #index = app_twitter.df.index.get_level_values(0).drop_duplicates()
+    #data = pd.DataFrame(index=index)
+    #series = data.sort_index().asfreq(freq='D')
     
-    app_twitter.days = list(set(series.index.astype(int)))
+    #app_twitter.days = list(set(series.index.astype(int)))
+    app_twitter.days = list(set(app_twitter.df['createdat'].astype(int)))
     app_twitter.days.sort()
     
 def fetch_and_prepare_tracks_data():

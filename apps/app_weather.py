@@ -141,6 +141,23 @@ def layout():
                         [
                             html.Div(
                                 [
+                                    dcc.DatePickerRange(
+                                            id = 'weather-date-picker',
+                                            min_date_allowed = datetime(1995, 8, 5),
+                                            max_date_allowed = datetime(2020, 8, 5),
+                                            initial_visible_month=datetime(2019, 9, 3),
+                                            start_date=datetime(2019, 9, 3),
+                                            end_date=datetime(2019, 9, 10)
+                                    ),
+                                ],
+                                className='twelve columns'
+                            ),                
+                        ],
+                    ),
+                    html.Div(
+                        [
+                            html.Div(
+                                [
                                     dcc.Dropdown(
                                             id = 'hourly',
                                             options= [{'label': value,'value': key}
@@ -196,15 +213,15 @@ def update_line_graph_daily(slider, daily):
 
 @app.callback(
 Output('weather-hourly-line-graph', 'figure'),
-[Input('slider', 'value'),
- Input('hourly', 'value')])
-def update_line_graph_hourly(slider, hourly):
+[Input('hourly', 'value'),
+ Input('weather-date-picker', 'start_date'),
+ Input('weather-date-picker', 'end_date')])
+def update_line_graph_hourly(hourly, start_date, end_date):
     
-    aux = df2.copy()
+    aux = df2.copy()    
     
-    aux = aux[aux['time'].astype(int) >= slider[0]]
-    aux = aux[aux['time'].astype(int) <= slider[1]]
-    
+    aux = aux[aux['time'].astype(int) >= datetime.timestamp(datetime.strptime(start_date, "%Y-%m-%d")) * 1000000000]
+    aux = aux[aux['time'].astype(int) <= datetime.timestamp(datetime.strptime(end_date, "%Y-%m-%d")) * 1000000000]
     data = []    
          
     if not aux.empty:
