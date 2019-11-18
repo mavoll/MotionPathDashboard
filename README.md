@@ -80,11 +80,19 @@ Use [import script](https://github.com/mavoll/MotionPathDashboard/blob/master/te
 
 `python test_data/insert_csv_tracks_into_postgis_point_date_sec.py -r 25 -y 1521027720 -e 'gisdb' -u 'postgres' -w 'postgres' -f 'test_data/geo_ref_tracks.csv' -t 'tracks_points_per_sec' -s 'Testdatensatz2' -d 'Testdatensatz2' -p 1 -b 1 -i 'localhost' -x 5432`
 
+Components:
+- Dropdown (multi select)
+- Time RangeSlider
+- Time Slider
+- Scattermapbox
+- DataTable
+- Pie
+- Scatter (mode='lines')
 
 ### Twitter data
 
 <p align="center">
-  <img src="assets/dashboard_twitter.png" width="800" align="middle">
+  <img src="assets/dashboard_tweets.png" width="800" align="middle">
 </p>
 
 Create table:
@@ -105,13 +113,13 @@ WITH (
 )
 TABLESPACE pg_default;
 ```
-Twitter data fetched from Casandra NoSQL database from [SparkPipeline](https://github.com/mavoll/SparkPipeline) and insert into postgis database (see [cass_to_postgis.py](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/cass_to_postgis.py).
+Twitter data fetched from Casandra NoSQL database from [SparkPipeline](https://github.com/mavoll/SparkPipeline) and insert into postgis database (see [cass_to_postgis.py](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/cass_to_postgis.py)).
 
 
 ### Weather
 
 <p align="center">
-  <img src="assets/dashboard_twitter.png" width="800" align="middle">
+  <img src="assets/dashboard_weather.png" width="800" align="middle">
 </p>
 
 Create table:
@@ -196,7 +204,15 @@ QCSY geprüft
 ### Pyramics
 
 <p align="center">
-  <img src="assets/dashboard_twitter.png" width="800" align="middle">
+  <img src="assets/dashboard_pyramics_1.png" width="800" align="middle">
+</p>
+
+<p align="center">
+  <img src="assets/dashboard_pyramics_2.png" width="800" align="middle">
+</p>
+
+<p align="center">
+  <img src="assets/dashboard_pyramics_3.png" width="800" align="middle">
 </p>
 
 Create table:
