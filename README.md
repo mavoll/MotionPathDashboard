@@ -3,7 +3,8 @@ Dashboard to analyse and vizualize detection and tracking results (using Dash by
 
 ## Install
 
-Install PostGIS (see MotionPathExtraction){https://github.com/mavoll/MotionPathsExtraction} and create table.
+Install Dash
+
 ```
 conda create --name dash python=3.6
 conda activate dash
@@ -16,42 +17,35 @@ pip install plotly --upgrade
 pip install psycopg2
 pip install geopandas
 
-cd ~/GitHub/MotionPathDashboard
-python index.py
-http://127.0.0.1:8050/
-
-cd ~/MotionPathDashboard
-python3 index.py
-http://194.95.79.98:9880/
-
-Climate data Germany 
-https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/
-
-Niederschlagsart:
-0 -- kein Niederschlag
-1 -- nur abgesetzte Niederschläge
-2 -- nur flüssige abgesetzte Niederschläge
-3 -- nur feste abgesetzte Niederschläge
-6 -- Niederschlag in flüssiger Form
-7 -- Niederschlag in fester Form
-8 -- Niederschlag in flüssiger und fester Form
-9 -- Niederschlagsmessung ausgefallen
-
-Qualitätsniveau:
-1 - nur formale Prüfung beim Entschlüsseln und
-Laden
-2 - nach individuellen Kriterien geprüft
-3 - in ROUTINE mit dem Verfahren QUALIMET und
-QCSY geprüft
-5 - historische, subjektive Verfahren
-7 - in ROUTINE geprüft, aber keine Korrekturen
-8 - Qualitätsicherung ausserhalb ROUTINE
-9 - in ROUTINE geprüft, nicht alle Parameter korrigiert
-10 - in ROUT
-
+cd ~
+git clone https://github.com/mavoll/MotionPathDashboard.git
 ```
 
-## Apps (created with Dash by Plotly)
+Install PostGIS:
+
+```
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bionic-pgdg main" >> /etc/apt/sources.list'
+wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -
+sudo apt update
+sudo apt install postgresql-11-postgis-2.5
+sudo apt install postgis
+
+sudo -u postgres psql
+CREATE EXTENSION adminpack;
+CREATE DATABASE gisdb;
+\connect gisdb;
+CREATE SCHEMA postgis;
+ALTER DATABASE gisdb SET search_path=public, postgis, contrib;
+\connect gisdb;
+CREATE EXTENSION postgis SCHEMA postgis;
+
+CREATE EXTENSION postgis_sfcgal SCHEMA postgis;
+
+\password postgres
+```
+For more PostGIS configuration see [here](http://trac.osgeo.org/postgis/wiki/UsersWikiPostGIS24UbuntuPGSQL10Apt).
+
+## Apps (created with Dash by Plotly) and tables
 
 ### Raw data
 
@@ -59,7 +53,7 @@ QCSY geprüft
   <img src="assets/dashboard_1.png" width="800" align="middle">
 </p>
 
-PostGIS data table:
+Create table:
 ```
 CREATE TABLE postgis.tracks_points_per_sec
 (
@@ -76,19 +70,10 @@ CREATE TABLE postgis.tracks_points_per_sec
 );
 
 ```
+Use [import script](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/insert_csv_tracks_into_postgis_point_date_sec.py) to insert testdata from [csv file](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/tracks_data_hh/geo_ref_tracks.csv) into database:
 
-Here the sample csv file and the import script from [MotionPathExtraction](https://github.com/mavoll/MotionPathsExtraction/tree/master/scripts) is used for demo. Accessed through `psycopg2` and fetched into GeoDataFrame using `geopandas.GeoDataFrame.from_postgis()` function.
+`python test_data/insert_csv_tracks_into_postgis_point_date_sec.py -r 25 -y 1521027720 -e 'gisdb' -u 'postgres' -w 'postgres' -f 'test_data/geo_ref_tracks.csv' -t 'tracks_points_per_sec' -s 'Testdatensatz2' -d 'Testdatensatz2' -p 1 -b 1 -i 'localhost' -x 5432`
 
-Fetching data from [SparkPipeline](https://github.com/mavoll/SparkPipeline) through `pyspark` is coming later for bigger data sets.
-
-Components:
-- Dropdown (multi select)
-- Time RangeSlider
-- Time Slider
-- Scattermapbox
-- DataTable
-- Pie
-- Scatter (mode='lines')
 
 ### Twitter data
 
@@ -110,6 +95,7 @@ CREATE TABLE postgis.twitter_points
   PRIMARY KEY (createdat, tweetid)
 );
 ```
+
 
 ### Weather
 
@@ -162,6 +148,33 @@ CREATE TABLE postgis.weather_hamburg_hourly
 );
 ```
 
+Climate data Germany:
+https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/
+
+```
+Niederschlagsart:
+0 -- kein Niederschlag
+1 -- nur abgesetzte Niederschläge
+2 -- nur flüssige abgesetzte Niederschläge
+3 -- nur feste abgesetzte Niederschläge
+6 -- Niederschlag in flüssiger Form
+7 -- Niederschlag in fester Form
+8 -- Niederschlag in flüssiger und fester Form
+9 -- Niederschlagsmessung ausgefallen
+
+Qualitätsniveau:
+1 - nur formale Prüfung beim Entschlüsseln und
+Laden
+2 - nach individuellen Kriterien geprüft
+3 - in ROUTINE mit dem Verfahren QUALIMET und
+QCSY geprüft
+5 - historische, subjektive Verfahren
+7 - in ROUTINE geprüft, aber keine Korrekturen
+8 - Qualitätsicherung ausserhalb ROUTINE
+9 - in ROUTINE geprüft, nicht alle Parameter korrigiert
+10 - in ROUT
+```
+
 ### Pyramics
 
 <p align="center">
@@ -190,95 +203,59 @@ CREATE TABLE postgis.pyramics
 
 ```
 
-## What we have and what we want?
+## Start Dashboard
 
-### What we have
+```
+cd ~/GitHub/MotionPathDashboard
+python index.py
+http://127.0.0.1:8050/
 
-from MotionPathExtraction:
-- Time-related trajectories (with pixel-coordinates within the image perspective the trajectories extracted from)
- of different classes 
- 
-from SimpleTPSMapping:
-(- Time-related geographical trajectories (lat, long) of different classes)
-because this transformation approach is not that accurate and its accuracy highly depends on manual input (target 
-point marking), we first try an approach based an the pixel-coordinates tracks from MotionPathExtraction
+cd ~/MotionPathDashboard
+python3 index.py
+http://194.95.79.98:9880/
+```
 
-from CountingTool:
-- Number of different objects crossing former defined (within an image representing cams perspective) counting lines 
-into one or another direction within an timeframe (and aggregations) 
+### Create systemd services
 
-### What we want
+```
+cd /etc/systemd/system
+sudo nano dash.service
+sudo chmod -v 777 /etc/systemd/system/dash.service
+```
 
-#### Indicators
+dash.service file content:
 
-- Def. "Frequency":
-     (Entries / Leavings) - 1
-     where Entries and Leavings are defined by the number of trajectories (distinguished by object classes) 
-     entering ("Entries") or leaving ("Leavings") an tile (and aggs) within an time frame 
+```
+[Unit]
+Description=dash
+After=network.target
+After=syslog.target
 
-- Def. "Dwelltime":
-     Lenght of the time span a objID (track) is within an tile (and aggs)
+[Service]
+User=hcuadmin
+Type=simple
+WorkingDirectory=/home/hcuadmin/MotionPathDashboard
+ExecStart=/usr/bin/python3 /home/hcuadmin/MotionPathDashboard/index.py
+ExecStop=/bin/kill -9 $MAINPID
+StandardOutput=syslog
+StandardError=syslog
+Restart=always
+RestartSec=3
 
-- Def. "Countings":
-     Number of different objects crossing former defined (within an image representing cams perspective) counting lines 
-     into one or another direction within an timeframe (and aggregations)
-     
-- Maybe later we include social media related indicators and wheather based indicators
+[Install]
+WantedBy=multi-user.target
+```
 
-#### Statistics
+Reload:
 
-(see excel file as example for our catalogized records)
-
-Basics:
---- Number detected objects/tracks (per object class) per cam and total
---- Track lenght (per object class) per cam
-
-Indicators:
---- Frequency
---- Dwelltime
---- Countings 
-
-Time granularities:
---- Total
---- Per day 
---- Per slice
---- Per subpart
---- Per minute
---- Per second
---- Per frame
-
-Aggregations:
---- Count
---- Min 
---- Average
---- Max
-
-#### Linear regression (Correlation between indicators)
-#### Auto regressive models (Extrapolate into the future)
-
-- ?other ml techniques to find pattern in time series?
-- ?other ml techniques to find pattern in trajectories?
-
-#### Dashboard 
--- Plotting (Indicators and statistics)
--- Maps (trajectories)
---- Animations (LineStringM and Point data)
--- Vizualizations
---- ?Counting lines?
---- ?
-
-### What we need
-
-to do:
-
-- Raster image into tiles (or other type of unit) - implement python tool
-
-- Data model, database and import from csv (SparkPipeline, later for geo-referenced trajectories PostGIS, GeoSpark, Django, ?)
-- Dashboard (bokeh, dash, Zeppelin, ?)
-- Calc indicators in regards to the tiles (its aggregations)
-- Calc statistics
-- Plot basic statistics on Dashboard
-- more coming 
+```
+sudo systemctl daemon-reload
+sudo reboot
+sudo systemctl start dash.service
+sudo systemctl stop dash.service
+sudo systemctl enable dash.service
+sudo systemctl status dash.service
+```
 
 ## Further development and research opportunities
 
