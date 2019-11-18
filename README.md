@@ -55,19 +55,25 @@ For more PostGIS configuration see [here](http://trac.osgeo.org/postgis/wiki/Use
 
 Create table:
 ```
-CREATE TABLE postgis.tracks_points_per_sec
+CREATE TABLE postgis.tracks_points_sec
 (
-  slice text NOT NULL,
-  cam text NOT NULL,
-  day text NOT NULL,
-  part integer NOT NULL,
-  subpart integer NOT NULL,
-  track_id integer NOT NULL,
-  time timestamp NOT NULL,
-  track_class text NOT NULL,
-  geom geometry(Point, 5555) NOT NULL,
-  PRIMARY KEY (slice, cam, day, part, subpart, track_id)
-);
+    id integer NOT NULL DEFAULT nextval('tracks_points_sec_id_seq'::regclass),
+    geom geometry(Point,5555),
+    slice character varying COLLATE pg_catalog."default",
+    day character varying COLLATE pg_catalog."default",
+    cam character varying COLLATE pg_catalog."default",
+    part integer,
+    subpart integer,
+    track_id integer,
+    track_class character varying COLLATE pg_catalog."default",
+    sec timestamp without time zone,
+    "time" timestamp without time zone,
+    CONSTRAINT tracks_points_sec_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
 
 ```
 Use [import script](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/insert_csv_tracks_into_postgis_point_date_sec.py) to insert testdata from [csv file](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/tracks_data_hh/geo_ref_tracks.csv) into database:
@@ -81,20 +87,25 @@ Use [import script](https://github.com/mavoll/MotionPathDashboard/blob/master/te
   <img src="assets/dashboard_twitter.png" width="800" align="middle">
 </p>
 
-PostGIS data table:
+Create table:
 ```
 CREATE TABLE postgis.twitter_points
 (
-  city text NOT NULL,
-  year integer NOT NULL,
-  month integer NOT NULL,
-  username text NOT NULL,
-  tweetid bigint NOT NULL,
-  createdat timestamp NOT NULL,
-  geom geometry(Point, 4326) NOT NULL,
-  PRIMARY KEY (createdat, tweetid)
-);
+    city text COLLATE pg_catalog."default" NOT NULL,
+    year integer NOT NULL,
+    month integer NOT NULL,
+    username text COLLATE pg_catalog."default" NOT NULL,
+    tweetid bigint NOT NULL,
+    createdat timestamp without time zone NOT NULL,
+    geom geometry(Point,4326) NOT NULL,
+    CONSTRAINT twitter_points_pkey PRIMARY KEY (createdat, tweetid)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
 ```
+Twitter data fetched from Casandra NoSQL database from [SparkPipeline](https://github.com/mavoll/SparkPipeline) and insert into postgis database (see [cass_to_postgis.py](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/cass_to_postgis.py).
 
 
 ### Weather
@@ -103,7 +114,7 @@ CREATE TABLE postgis.twitter_points
   <img src="assets/dashboard_twitter.png" width="800" align="middle">
 </p>
 
-PostGIS data table:
+Create table:
 ```
 sudo -u postgres psql gisdb
 
@@ -147,6 +158,13 @@ CREATE TABLE postgis.weather_hamburg_hourly
   PRIMARY KEY (stations_id, time)
 );
 ```
+Use [import script](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/insert_weather_into_postgis_daily.py) to insert testdata from [daily data](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/weather_data_hh/daily/produkt_klima_tag_20180304_20190904_01975.txt) into database:
+
+`python test_data/insert_weather_into_postgis_daily.py -e 'gisdb' -u 'postgres' -w 'postgres' -f 'test_data/weather_data_hh/daily/produkt_klima_tag_20180304_20190904_01975.txt' -t 'weather_hamburg_daily' -i 'localhost' -x 5432`
+
+Use [import script](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/insert_weather_into_postgis_hourly.py) to insert testdata from [hourly data](https://github.com/mavoll/MotionPathDashboard/tree/master/test_data/weather_data_hh/hourly) into database:
+
+`python test_data/insert_weather_into_postgis_daily.py -e 'gisdb' -u 'postgres' -w 'postgres' -f 'test_data/weather_data_hh/daily/produkt_klima_tag_20180304_20190904_01975.txt' -t 'weather_hamburg_daily' -i 'localhost' -x 5432`
 
 Climate data Germany:
 https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/
@@ -181,7 +199,7 @@ QCSY geprüft
   <img src="assets/dashboard_twitter.png" width="800" align="middle">
 </p>
 
-PostGIS data table:
+Create table:
 ```
 sudo -u postgres psql gisdb
 
@@ -202,6 +220,10 @@ CREATE TABLE postgis.pyramics
 );
 
 ```
+Use [import script](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/insert_pyramics_into_postgis.py) to insert testdata from [pyramics data](https://github.com/mavoll/MotionPathDashboard/tree/master/test_data/pyramics_data_hh) into database:
+
+`python test_data/insert_pyramics_into_postgis.py -e 'gisdb' -u 'postgres' -w 'postgres' -t 'pyramics' -i 'localhost' -x 5432`
+
 
 ## Start Dashboard
 
@@ -210,9 +232,6 @@ cd ~/GitHub/MotionPathDashboard
 python index.py
 http://127.0.0.1:8050/
 
-cd ~/MotionPathDashboard
-python3 index.py
-http://194.95.79.98:9880/
 ```
 
 ### Create systemd services
