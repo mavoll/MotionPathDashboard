@@ -17,8 +17,8 @@ app.connection.set_session(autocommit=True)
 app.cursor = app.connection.cursor()
 
 auth_provider = PlainTextAuthProvider(
-            username='ecl', password='ssmq2020!ztRR')
-app.cluster = Cluster(['194.95.79.98'], auth_provider=auth_provider)
+            username='ecl', password='')
+app.cluster = Cluster([''], auth_provider=auth_provider)
 app.session = app.cluster.connect('master_dataset')
 
 # Boostrap CSS.
