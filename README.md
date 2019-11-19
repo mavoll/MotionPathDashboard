@@ -57,23 +57,19 @@ Create table:
 ```
 CREATE TABLE postgis.tracks_points_sec
 (
-    id integer NOT NULL DEFAULT nextval('tracks_points_sec_id_seq'::regclass),
+    id integer NOT NULL,
     geom geometry(Point,5555),
-    slice character varying COLLATE pg_catalog."default",
-    day character varying COLLATE pg_catalog."default",
-    cam character varying COLLATE pg_catalog."default",
+    slice character,
+    day character,
+    cam character,
     part integer,
     subpart integer,
     track_id integer,
-    track_class character varying COLLATE pg_catalog."default",
+    track_class character,
     sec timestamp without time zone,
     "time" timestamp without time zone,
-    CONSTRAINT tracks_points_sec_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
+    PRIMARY KEY (id)
+);
 
 ```
 Use [import script](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/insert_csv_tracks_into_postgis_point_date_sec.py) to insert testdata from [csv file](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/tracks_data_hh/geo_ref_tracks.csv) into database:
@@ -99,19 +95,15 @@ Create table:
 ```
 CREATE TABLE postgis.twitter_points
 (
-    city text COLLATE pg_catalog."default" NOT NULL,
+    city text NOT NULL,
     year integer NOT NULL,
     month integer NOT NULL,
-    username text COLLATE pg_catalog."default" NOT NULL,
+    username text,
     tweetid bigint NOT NULL,
     createdat timestamp without time zone NOT NULL,
     geom geometry(Point,4326) NOT NULL,
-    CONSTRAINT twitter_points_pkey PRIMARY KEY (createdat, tweetid)
-)
-WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
+    PRIMARY KEY (createdat, tweetid)
+);
 ```
 Twitter data fetched from Casandra NoSQL database from [SparkPipeline](https://github.com/mavoll/SparkPipeline) and insert into postgis database (see [cass_to_postgis.py](https://github.com/mavoll/MotionPathDashboard/blob/master/test_data/cass_to_postgis.py)).
 
