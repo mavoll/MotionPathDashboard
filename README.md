@@ -178,6 +178,16 @@ Climate data Germany:
 https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/
 
 ```
+indicators_daily = {'fx': 'wind speed max', 'fm': 'wind speed average', 'rsk': 'precipitation sum', 
+              'rskf': 'precipitation type', 'sdk': 'sun sum', 'shk_tag': 'snow sum', 
+              'nm': 'cloud amount average', 'vpm': 'steam pressure average', 'pm': 'air pressure', 
+              'tmk': 'temp average', 'upm': 'air humidity average', 'txk': 'temp max', 
+              'tnk': 'temp min', 'tgk': 'soil temp 5cm min'}
+
+indicators_hourly = {'v_te005': 'soil temp 5cm', 'ff': 'wind speed', 'v_n': 'cloud amount', 
+              'p': 'air pressure type', 'r1': 'precipitation', 'wrtr': 'precipitation type', 
+              'rs_ind': 'precipitation indicator', 'sd_s0': 'sun', 'tt_tu': 'temp', 'rf_tu': 'air humidity'}
+              
 Niederschlagsart:
 0 -- kein Niederschlag
 1 -- nur abgesetzte Niederschläge
